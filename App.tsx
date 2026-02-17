@@ -6,14 +6,17 @@
 import React, { useState, useEffect } from 'react';
 import { HeroScene, DataVaultScene } from './components/QuantumScene';
 import { SecurityArchitectureDiagram, AIServicePipelineDiagram, ROIComparisonChart } from './components/Diagrams';
-import { ArrowDown, Menu, X, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowDown, Menu, X, ArrowRight, CheckCircle2, Brain, ShieldCheck, Database, Users } from 'lucide-react';
 
-const TeamCard = ({ name, role, delay }: { name: string, role: string, delay: string }) => {
+const CapabilityCard = ({ title, description, icon: Icon, delay }: { title: string, description: string, icon: any, delay: string }) => {
   return (
-    <div className="flex flex-col group animate-fade-in-up items-center p-8 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 w-full max-w-xs hover:border-int-gold/50" style={{ animationDelay: delay }}>
-      <h3 className="font-serif text-2xl text-int-navy text-center mb-2">{name}</h3>
-      <div className="w-8 h-0.5 bg-int-gold mb-3 opacity-60"></div>
-      <p className="text-xs text-gray-500 font-bold uppercase tracking-widest text-center leading-relaxed">{role}</p>
+    <div className="flex flex-col group animate-fade-in-up items-center p-8 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 w-full h-full hover:border-int-gold/50" style={{ animationDelay: delay }}>
+      <div className="mb-6 text-int-navy group-hover:text-int-gold transition-colors duration-300">
+        <Icon size={40} strokeWidth={1.5} />
+      </div>
+      <h3 className="font-serif text-xl text-int-navy text-center mb-3">{title}</h3>
+      <div className="w-8 h-0.5 bg-int-gold mb-4 opacity-60"></div>
+      <p className="text-sm text-gray-500 font-medium text-center leading-relaxed">{description}</p>
     </div>
   );
 };
@@ -66,7 +69,7 @@ const App: React.FC = () => {
             <a href="#challenge" onClick={scrollToSection('challenge')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">The Gap</a>
             <a href="#security" onClick={scrollToSection('security')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">Security</a>
             <a href="#roi" onClick={scrollToSection('roi')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">ROI</a>
-            <a href="#team" onClick={scrollToSection('team')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">Team</a>
+            <a href="#capabilities" onClick={scrollToSection('capabilities')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">Capabilities</a>
             <a 
               href="#contact" 
               className="px-6 py-2 bg-int-gold text-white font-bold rounded-full hover:bg-white hover:text-int-gold transition-all shadow-sm cursor-pointer border border-int-gold"
@@ -87,7 +90,7 @@ const App: React.FC = () => {
             <a href="#challenge" onClick={scrollToSection('challenge')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">The Challenge</a>
             <a href="#security" onClick={scrollToSection('security')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">Security Architecture</a>
             <a href="#roi" onClick={scrollToSection('roi')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">ROI</a>
-            <a href="#team" onClick={scrollToSection('team')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">Leadership</a>
+            <a href="#capabilities" onClick={scrollToSection('capabilities')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">Capabilities</a>
             <a 
               href="#contact"
               onClick={() => setMenuOpen(false)} 
@@ -117,12 +120,14 @@ const App: React.FC = () => {
             INT Inc. deploys production-grade AI infrastructure for mid-market businesses—with SOC 2 governance, tenant isolation, and 25 years of managed services expertise.
           </p>
           
-          <div className="flex justify-center">
-             <a href="#challenge" onClick={scrollToSection('challenge')} className="group flex flex-col items-center gap-2 text-sm font-medium text-int-gold hover:text-white transition-colors cursor-pointer">
-                <span className="tracking-widest">DISCOVER</span>
-                <span className="p-3 border border-int-gold/30 rounded-full group-hover:border-white transition-colors bg-white/5">
-                    <ArrowDown size={18} />
-                </span>
+          <div className="flex justify-center mt-12">
+             <a 
+               href="#challenge" 
+               onClick={scrollToSection('challenge')} 
+               className="group relative inline-flex items-center gap-4 px-10 py-5 rounded-full border border-int-gold bg-int-navy/30 text-int-gold shadow-[0_0_25px_rgba(197,160,89,0.3)] backdrop-blur-sm transition-all duration-500 hover:bg-int-gold hover:text-int-navy hover:shadow-[0_0_50px_rgba(197,160,89,0.7)] hover:-translate-y-1 hover:scale-105"
+             >
+                <span className="text-sm font-bold tracking-[0.25em] transition-colors duration-300">DISCOVER</span>
+                <ArrowDown size={20} className="transition-transform duration-300 group-hover:translate-y-1" />
              </a>
           </div>
         </div>
@@ -258,34 +263,38 @@ const App: React.FC = () => {
              </div>
         </section>
 
-        {/* Team */}
-        <section id="team" className="py-24 bg-white border-t border-gray-200">
+        {/* Capabilities (was Team) */}
+        <section id="capabilities" className="py-24 bg-white border-t border-gray-200">
            <div className="container mx-auto px-6">
                 <div className="text-center mb-16">
-                    <div className="inline-block mb-3 text-xs font-bold tracking-widest text-gray-400 uppercase">LEADERSHIP</div>
-                    <h2 className="font-serif text-3xl md:text-5xl mb-4 text-int-navy">Your AIaaS Team</h2>
-                    <p className="text-gray-500 max-w-2xl mx-auto">Led by industry veterans with a deep history in secure managed services.</p>
+                    <div className="inline-block mb-3 text-xs font-bold tracking-widest text-int-gold uppercase">CAPABILITIES</div>
+                    <h2 className="font-serif text-3xl md:text-5xl mb-4 text-int-navy">What We Deliver</h2>
+                    <p className="text-gray-500 max-w-2xl mx-auto">Enterprise AI capabilities backed by 25+ years of managed services expertise and SOC 2 Type II compliance.</p>
                 </div>
                 
-                <div className="flex flex-col md:flex-row gap-8 justify-center items-center flex-wrap">
-                    <TeamCard 
-                        name="Diane Weigle" 
-                        role="Chief Executive Officer" 
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <CapabilityCard 
+                        title="AI Strategy" 
+                        description="Custom AI roadmaps aligned to your business goals — not generic playbooks. We evaluate 60+ platforms to find what actually fits your workflows."
+                        icon={Brain}
                         delay="0s" 
                     />
-                    <TeamCard 
-                        name="Dave Linderman" 
-                        role="President" 
+                    <CapabilityCard 
+                        title="Security Operations" 
+                        description="SOC 2 Type II certified infrastructure with zero-trust architecture. Your data stays isolated, encrypted, and auditable at every layer."
+                        icon={ShieldCheck}
                         delay="0.1s" 
                     />
-                    <TeamCard 
-                        name="Dr. Elena Rostova" 
-                        role="VP of AI Strategy" 
+                    <CapabilityCard 
+                        title="Data Architecture" 
+                        description="Multi-tenant vault design with row-level security and customer-managed encryption. Built for MSPs who can't afford cross-tenant exposure."
+                        icon={Database}
                         delay="0.2s" 
                     />
-                    <TeamCard 
-                        name="Marcus Thorne" 
-                        role="Head of Security Operations" 
+                    <CapabilityCard 
+                        title="Client Success" 
+                        description="We're not consultants — we're partners. Dedicated support with proactive monitoring, 24/7 helpdesk, and quarterly business reviews."
+                        icon={Users}
                         delay="0.3s" 
                     />
                 </div>

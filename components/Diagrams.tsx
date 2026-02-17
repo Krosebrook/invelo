@@ -12,6 +12,7 @@ export const SecurityArchitectureDiagram: React.FC = () => {
   // 3x3 grid of "Client Endpoints" (was Data Qubits)
   // Interspersed with "Security Controls" (was Stabilizers)
   const [activeRequests, setActiveRequests] = useState<number[]>([]);
+  const [hoveredControl, setHoveredControl] = useState<number | null>(null);
   
   // Adjacency: Endpoint Index -> Control Indices
   const adjacency: Record<number, number[]> = {
@@ -20,6 +21,13 @@ export const SecurityArchitectureDiagram: React.FC = () => {
     2: [1, 3],
     3: [2, 3],
     4: [0, 1, 2, 3], 
+  };
+
+  const controlDescriptions: Record<number, string> = {
+    0: "AUTH: Verifies user identity and permissions via SSO & MFA.",
+    1: "ENC: Enforces AES-256 encryption for data at rest and in transit.",
+    2: "LOG: Records immutable ledgers of every data access event.",
+    3: "SOC2: Automated policy checks and governance monitoring.",
   };
 
   const toggleRequest = (id: number) => {
@@ -44,7 +52,7 @@ export const SecurityArchitectureDiagram: React.FC = () => {
         <h3 className="font-serif text-xl text-int-navy">Zero-Trust Data Venue</h3>
       </div>
       <p className="text-sm text-gray-500 mb-6 text-center max-w-md">
-        Click the <strong>Endpoints</strong> to simulate data requests. Watch INT's <strong>Security Controls</strong> instantly verify and isolate traffic.
+        Click the <strong>Endpoints</strong> to simulate data requests. Hover over <strong>Security Controls</strong> to see their function.
       </p>
       
       <div className="relative w-64 h-64 bg-int-cream rounded-lg border border-int-navy/10 p-4 flex flex-wrap justify-between content-between relative">
@@ -64,10 +72,28 @@ export const SecurityArchitectureDiagram: React.FC = () => {
          ].map(stab => (
              <motion.div
                 key={`ctrl-${stab.id}`}
-                className={`absolute w-12 h-12 -ml-6 -mt-6 flex items-center justify-center text-white text-[10px] font-bold rounded-lg shadow-sm transition-all duration-300 z-10 ${activeControls.includes(stab.id) ? stab.color + ' opacity-100 scale-110 ring-4 ring-offset-2 ring-int-cream' : 'bg-gray-300 opacity-50'}`}
+                className={`absolute w-12 h-12 -ml-6 -mt-6 flex items-center justify-center text-white text-[10px] font-bold rounded-lg shadow-sm transition-all duration-300 cursor-help ${hoveredControl === stab.id ? 'z-50 scale-110' : 'z-30'} ${activeControls.includes(stab.id) ? stab.color + ' opacity-100 ring-4 ring-offset-2 ring-int-cream' : 'bg-gray-300 opacity-50'}`}
                 style={{ left: stab.x, top: stab.y }}
+                onMouseEnter={() => setHoveredControl(stab.id)}
+                onMouseLeave={() => setHoveredControl(null)}
              >
                  {activeControls.includes(stab.id) ? <CheckCircle size={16} /> : <Lock size={14} />}
+                 
+                 <AnimatePresence>
+                   {hoveredControl === stab.id && (
+                     <motion.div
+                       initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                       animate={{ opacity: 1, y: 0, scale: 1 }}
+                       exit={{ opacity: 0, y: 5, scale: 0.9 }}
+                       transition={{ duration: 0.15 }}
+                       className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-48 bg-int-navy text-white text-[10px] leading-tight p-3 rounded-md shadow-xl pointer-events-none"
+                     >
+                        <div className="text-int-gold font-bold mb-1 border-b border-white/10 pb-1">{controlDescriptions[stab.id].split(':')[0]}</div>
+                        <div className="text-gray-200">{controlDescriptions[stab.id].split(':')[1]}</div>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-int-navy"></div>
+                     </motion.div>
+                   )}
+                 </AnimatePresence>
              </motion.div>
          ))}
 
@@ -178,6 +204,7 @@ export const AIServicePipelineDiagram: React.FC = () => {
 export const ROIComparisonChart: React.FC = () => {
     type MetricType = 'success' | 'speed' | 'cost';
     const [metric, setMetric] = useState<MetricType>('success');
+    const [hoveredBar, setHoveredBar] = useState<'diy' | 'int' | null>(null);
     
     // Data config for comparison
     const data = {
@@ -218,18 +245,33 @@ export const ROIComparisonChart: React.FC = () => {
                 </p>
                 
                 <div className="flex flex-col gap-2 mt-4">
-                    <button onClick={() => setMetric('success')} className={`px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 border flex items-center justify-between ${metric === 'success' ? 'bg-int-navy text-white border-int-navy' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}>
+                    <motion.button 
+                        onClick={() => setMetric('success')} 
+                        whileHover={{ x: 5 }}
+                        whileTap={{ scale: 0.98 }}
+                        className={`px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 border flex items-center justify-between ${metric === 'success' ? 'bg-int-navy text-white border-int-navy shadow-lg' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}
+                    >
                         <span>Success Rate</span>
-                        {metric === 'success' && <CheckCircle size={16} className="text-int-teal"/>}
-                    </button>
-                    <button onClick={() => setMetric('speed')} className={`px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 border flex items-center justify-between ${metric === 'speed' ? 'bg-int-navy text-white border-int-navy' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}>
+                        {metric === 'success' && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}><CheckCircle size={16} className="text-int-teal"/></motion.div>}
+                    </motion.button>
+                    <motion.button 
+                        onClick={() => setMetric('speed')} 
+                        whileHover={{ x: 5 }}
+                        whileTap={{ scale: 0.98 }}
+                        className={`px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 border flex items-center justify-between ${metric === 'speed' ? 'bg-int-navy text-white border-int-navy shadow-lg' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}
+                    >
                         <span>Speed to Deploy</span>
-                        {metric === 'speed' && <Rocket size={16} className="text-int-teal"/>}
-                    </button>
-                    <button onClick={() => setMetric('cost')} className={`px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 border flex items-center justify-between ${metric === 'cost' ? 'bg-int-navy text-white border-int-navy' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}>
+                        {metric === 'speed' && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}><Rocket size={16} className="text-int-teal"/></motion.div>}
+                    </motion.button>
+                    <motion.button 
+                        onClick={() => setMetric('cost')} 
+                        whileHover={{ x: 5 }}
+                        whileTap={{ scale: 0.98 }}
+                        className={`px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 border flex items-center justify-between ${metric === 'cost' ? 'bg-int-navy text-white border-int-navy shadow-lg' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}
+                    >
                         <span>Cost Efficiency</span>
-                        {metric === 'cost' && <BarChart2 size={16} className="text-int-teal"/>}
-                    </button>
+                        {metric === 'cost' && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}><BarChart2 size={16} className="text-int-teal"/></motion.div>}
+                    </motion.button>
                 </div>
             </div>
             
@@ -243,28 +285,76 @@ export const ROIComparisonChart: React.FC = () => {
                 </div>
 
                 {/* DIY Bar */}
-                <div className="w-20 flex flex-col justify-end items-center h-full z-10">
+                <div 
+                    className="w-20 flex flex-col justify-end items-center h-full z-10 transition-opacity duration-300"
+                    style={{ opacity: hoveredBar && hoveredBar !== 'diy' ? 0.4 : 1 }}
+                    onMouseEnter={() => setHoveredBar('diy')}
+                    onMouseLeave={() => setHoveredBar(null)}
+                >
                     <div className="flex-1 w-full flex items-end justify-center relative mb-3">
-                        <div className="absolute -top-8 w-full text-center text-sm font-mono text-gray-500 font-bold">{currentData.diy}{currentData.unit}</div>
+                        <AnimatePresence>
+                             {hoveredBar === 'diy' && (
+                                <motion.div 
+                                    className="absolute bottom-full mb-2 bg-slate-900 text-white text-xs font-bold py-1 px-3 rounded shadow-lg whitespace-nowrap z-50 pointer-events-none"
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 5 }}
+                                >
+                                    {currentData.diy}{currentData.unit}
+                                     <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
+                                </motion.div>
+                             )}
+                        </AnimatePresence>
+
                         <motion.div 
-                            className="w-full bg-gray-400 rounded-t-sm"
+                            className="w-full bg-gray-400 rounded-t-sm cursor-pointer origin-bottom"
                             initial={{ height: 0 }}
-                            animate={{ height: `${(currentData.diy / maxVal) * 100}%` }}
-                            transition={{ type: "spring", stiffness: 80, damping: 15 }}
+                            animate={{ 
+                                height: `${(currentData.diy / maxVal) * 100}%`,
+                                scaleY: hoveredBar === 'diy' ? [1, 1.05, 1] : 1
+                            }}
+                            transition={{ 
+                                height: { type: "spring", stiffness: 140, damping: 12, mass: 0.8 },
+                                scaleY: { duration: 1, repeat: Infinity, ease: "easeInOut" }
+                            }}
                         />
                     </div>
                     <div className="h-8 flex items-center text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">DIY / Internal</div>
                 </div>
 
                 {/* INT Bar */}
-                <div className="w-20 flex flex-col justify-end items-center h-full z-10">
+                <div 
+                    className="w-20 flex flex-col justify-end items-center h-full z-10 transition-opacity duration-300"
+                    style={{ opacity: hoveredBar && hoveredBar !== 'int' ? 0.4 : 1 }}
+                    onMouseEnter={() => setHoveredBar('int')}
+                    onMouseLeave={() => setHoveredBar(null)}
+                >
                      <div className="flex-1 w-full flex items-end justify-center relative mb-3">
-                        <div className="absolute -top-8 w-full text-center text-sm font-mono text-int-navy font-bold bg-white px-1 shadow-sm rounded-sm border border-int-teal/20">{currentData.int}{currentData.unit}</div>
+                         <AnimatePresence>
+                             {hoveredBar === 'int' && (
+                                <motion.div 
+                                    className="absolute bottom-full mb-2 bg-slate-900 text-white text-xs font-bold py-1 px-3 rounded shadow-lg whitespace-nowrap z-50 pointer-events-none"
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 5 }}
+                                >
+                                    {currentData.int}{currentData.unit}
+                                     <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
+                                </motion.div>
+                             )}
+                        </AnimatePresence>
+
                         <motion.div 
-                            className="w-full bg-gradient-to-t from-int-navy to-int-teal rounded-t-md shadow-lg relative overflow-hidden"
+                            className="w-full bg-gradient-to-t from-int-navy to-int-teal rounded-t-md shadow-lg relative overflow-hidden cursor-pointer origin-bottom"
                             initial={{ height: 0 }}
-                            animate={{ height: Math.max(2, (currentData.int / maxVal) * 100) + '%' }}
-                            transition={{ type: "spring", stiffness: 80, damping: 15, delay: 0.1 }}
+                            animate={{ 
+                                height: Math.max(2, (currentData.int / maxVal) * 100) + '%',
+                                scaleY: hoveredBar === 'int' ? [1, 1.05, 1] : 1
+                            }}
+                            transition={{ 
+                                height: { type: "spring", stiffness: 140, damping: 12, mass: 0.8, delay: 0.05 },
+                                scaleY: { duration: 1, repeat: Infinity, ease: "easeInOut" }
+                            }}
                         >
                            <div className="absolute inset-0 bg-white/10"></div>
                         </motion.div>

@@ -14,22 +14,30 @@ const NetworkNode = ({ position, color, scale = 1 }: { position: [number, number
   useFrame((state) => {
     if (ref.current) {
       const t = state.clock.getElapsedTime();
-      ref.current.position.y = position[1] + Math.sin(t * 1.5 + position[0]) * 0.1;
-      ref.current.rotation.x = t * 0.2;
-      ref.current.rotation.z = t * 0.1;
+      
+      // Dynamic vertical floating (layered on top of Float component)
+      ref.current.position.y = position[1] + Math.sin(t * 0.5 + position[0]) * 0.15;
+      
+      // Continuous complex rotation
+      ref.current.rotation.x = t * 0.12;
+      ref.current.rotation.z = t * 0.08;
+
+      // Subtle "Breathing" scale effect for living tech feel
+      const breathe = 1 + Math.sin(t * 0.8 + position[0]) * 0.03;
+      ref.current.scale.set(scale * breathe, scale * breathe, scale * breathe);
     }
   });
 
   return (
-    <Sphere ref={ref} args={[1, 32, 32]} position={position} scale={scale}>
+    <Sphere ref={ref} args={[1, 64, 64]} position={position}>
       <MeshDistortMaterial
         color={color}
-        envMapIntensity={1.5}
+        envMapIntensity={2.5}
         clearcoat={1}
         clearcoatRoughness={0.1}
-        metalness={0.8}
-        roughness={0.2}
-        distort={0.3}
+        metalness={0.9}
+        roughness={0.1}
+        distort={0.4}
         speed={1.5}
       />
     </Sphere>
@@ -37,26 +45,50 @@ const NetworkNode = ({ position, color, scale = 1 }: { position: [number, number
 };
 
 const SecurityRing = () => {
-  const ref = useRef<THREE.Mesh>(null);
+  const ref1 = useRef<THREE.Mesh>(null);
   const ref2 = useRef<THREE.Mesh>(null);
+  const ref3 = useRef<THREE.Mesh>(null);
   
   useFrame((state) => {
-    if (ref.current && ref2.current) {
-       const t = state.clock.getElapsedTime();
-       ref.current.rotation.x = Math.PI / 2 + Math.sin(t * 0.1) * 0.1;
-       ref.current.rotation.y = t * 0.05;
-       ref2.current.rotation.x = Math.PI / 2 + Math.cos(t * 0.15) * 0.1;
-       ref2.current.rotation.y = -t * 0.08;
+    const t = state.clock.getElapsedTime();
+    
+    // Ring 1: Main Gold Ring
+    if (ref1.current) {
+       ref1.current.rotation.x = Math.PI / 2 + Math.sin(t * 0.2) * 0.15;
+       ref1.current.rotation.y = t * 0.1;
+       // Subtle scale pulse
+       const s = 1 + Math.sin(t * 0.5) * 0.02;
+       ref1.current.scale.set(s, s, s);
+    }
+    
+    // Ring 2: Secondary Teal Ring (Faster, counter-rotation)
+    if (ref2.current) {
+       ref2.current.rotation.x = Math.PI / 2 + Math.cos(t * 0.3) * 0.2;
+       ref2.current.rotation.y = -t * 0.15;
+    }
+
+    // Ring 3: Outer Faint Ring (Very slow, stabilizing)
+    if (ref3.current) {
+        ref3.current.rotation.x = Math.PI / 2 + Math.sin(t * 0.1 + 2) * 0.05;
+        ref3.current.rotation.y = t * 0.05;
     }
   });
 
   return (
     <group>
-      <Torus ref={ref} args={[3.5, 0.02, 16, 100]} rotation={[Math.PI / 2, 0, 0]}>
-        <meshStandardMaterial color="#C5A059" emissive="#C5A059" emissiveIntensity={0.2} transparent opacity={0.4} />
+      {/* Inner Ring - Gold */}
+      <Torus ref={ref1} args={[3.5, 0.02, 32, 100]} rotation={[Math.PI / 2, 0, 0]}>
+        <meshStandardMaterial color="#C5A059" emissive="#C5A059" emissiveIntensity={0.4} transparent opacity={0.6} />
       </Torus>
-      <Torus ref={ref2} args={[4.2, 0.02, 16, 100]} rotation={[Math.PI / 2, 0.5, 0]}>
-        <meshStandardMaterial color="#0D9488" emissive="#0D9488" emissiveIntensity={0.2} transparent opacity={0.3} />
+      
+      {/* Middle Ring - Teal */}
+      <Torus ref={ref2} args={[4.2, 0.015, 32, 100]} rotation={[Math.PI / 2, 0.5, 0]}>
+        <meshStandardMaterial color="#0D9488" emissive="#0D9488" emissiveIntensity={0.3} transparent opacity={0.4} />
+      </Torus>
+
+       {/* Outer Ring - Faint Navy/White for depth */}
+      <Torus ref={ref3} args={[5.0, 0.01, 32, 100]} rotation={[Math.PI / 2, -0.2, 0]}>
+        <meshStandardMaterial color="#1E3A5F" emissive="#ffffff" emissiveIntensity={0.1} transparent opacity={0.15} />
       </Torus>
     </group>
   );
