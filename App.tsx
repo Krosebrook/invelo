@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { HeroScene, DataVaultScene } from './components/QuantumScene';
 import { SecurityArchitectureDiagram, AIServicePipelineDiagram, ROIComparisonChart } from './components/Diagrams';
-import { ArrowDown, Menu, X, ArrowRight, CheckCircle2, Brain, ShieldCheck, Database, Users } from 'lucide-react';
+import { ArrowDown, Menu, X, ArrowRight, CheckCircle2, Brain, ShieldCheck, Database, Users, Landmark, Target, History } from 'lucide-react';
 
 const CapabilityCard = ({ title, description, icon: Icon, delay }: { title: string, description: string, icon: any, delay: string }) => {
   return (
@@ -53,7 +53,7 @@ const App: React.FC = () => {
       {/* Navigation */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'}`}>
         <div className="container mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} data-testid="nav-logo">
             <div className="w-10 h-10 bg-int-navy rounded-sm flex items-center justify-center text-white font-sans font-bold text-xl shadow-md">
                 <span className="text-int-gold">I</span>
             </div>
@@ -66,19 +66,25 @@ const App: React.FC = () => {
           </div>
           
           <div className={`hidden md:flex items-center gap-8 text-sm font-medium tracking-wide ${scrolled ? 'text-gray-600' : 'text-gray-200'}`}>
-            <a href="#challenge" onClick={scrollToSection('challenge')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">The Gap</a>
-            <a href="#security" onClick={scrollToSection('security')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">Security</a>
-            <a href="#roi" onClick={scrollToSection('roi')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">ROI</a>
-            <a href="#capabilities" onClick={scrollToSection('capabilities')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">Capabilities</a>
+            <a href="#challenge" onClick={scrollToSection('challenge')} className="hover:text-int-gold transition-colors cursor-pointer uppercase" data-testid="nav-link-gap">The Gap</a>
+            <a href="#security" onClick={scrollToSection('security')} className="hover:text-int-gold transition-colors cursor-pointer uppercase" data-testid="nav-link-security">Security</a>
+            <a href="#roi" onClick={scrollToSection('roi')} className="hover:text-int-gold transition-colors cursor-pointer uppercase" data-testid="nav-link-roi">ROI</a>
+            <a href="https://intinc.com/#about" onClick={scrollToSection('about')} className="hover:text-int-gold transition-colors cursor-pointer uppercase" data-testid="nav-link-about">About Us</a>
+            <a href="#capabilities" onClick={scrollToSection('capabilities')} className="hover:text-int-gold transition-colors cursor-pointer uppercase" data-testid="nav-link-capabilities">Capabilities</a>
             <a 
               href="#contact" 
               className="px-6 py-2 bg-int-gold text-white font-bold rounded-full hover:bg-white hover:text-int-gold transition-all shadow-sm cursor-pointer border border-int-gold"
+              data-testid="nav-cta"
             >
               Get Started
             </a>
           </div>
 
-          <button className={`md:hidden p-2 ${scrolled ? 'text-int-navy' : 'text-int-navy'}`} onClick={() => setMenuOpen(!menuOpen)}>
+          <button 
+            className={`md:hidden p-2 ${scrolled ? 'text-int-navy' : 'text-int-navy'}`} 
+            onClick={() => setMenuOpen(!menuOpen)}
+            data-testid="mobile-menu-toggle"
+          >
             {menuOpen ? <X /> : <Menu />}
           </button>
         </div>
@@ -86,10 +92,11 @@ const App: React.FC = () => {
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="fixed inset-0 z-40 bg-int-cream flex flex-col items-center justify-center gap-8 text-xl font-serif animate-fade-in text-int-navy">
+        <div className="fixed inset-0 z-40 bg-int-cream flex flex-col items-center justify-center gap-8 text-xl font-serif animate-fade-in text-int-navy" data-testid="mobile-menu-container">
             <a href="#challenge" onClick={scrollToSection('challenge')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">The Challenge</a>
             <a href="#security" onClick={scrollToSection('security')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">Security Architecture</a>
             <a href="#roi" onClick={scrollToSection('roi')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">ROI</a>
+            <a href="https://intinc.com/#about" onClick={scrollToSection('about')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">About Us</a>
             <a href="#capabilities" onClick={scrollToSection('capabilities')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">Capabilities</a>
             <a 
               href="#contact"
@@ -124,10 +131,11 @@ const App: React.FC = () => {
              <a 
                href="#challenge" 
                onClick={scrollToSection('challenge')} 
-               className="group relative inline-flex items-center gap-4 px-10 py-5 rounded-full border border-int-gold bg-int-navy/30 text-int-gold shadow-[0_0_25px_rgba(197,160,89,0.3)] backdrop-blur-sm transition-all duration-500 hover:bg-int-gold hover:text-int-navy hover:shadow-[0_0_50px_rgba(197,160,89,0.7)] hover:-translate-y-1 hover:scale-105"
+               data-testid="hero-discover-cta"
+               className="group relative inline-flex items-center gap-4 px-12 py-5 rounded-full border border-int-gold/80 bg-int-navy/40 text-int-gold shadow-[0_0_20px_rgba(197,160,89,0.2)] backdrop-blur-md transition-all duration-500 hover:bg-int-gold hover:text-int-navy hover:shadow-[0_0_60px_rgba(197,160,89,0.6)] hover:-translate-y-1 hover:scale-105"
              >
-                <span className="text-sm font-bold tracking-[0.25em] transition-colors duration-300">DISCOVER</span>
-                <ArrowDown size={20} className="transition-transform duration-300 group-hover:translate-y-1" />
+                <span className="text-sm font-bold tracking-[0.3em] uppercase transition-colors duration-300">Discover</span>
+                <ArrowDown size={20} className="transition-transform duration-500 group-hover:translate-y-1" />
              </a>
           </div>
         </div>
@@ -135,7 +143,7 @@ const App: React.FC = () => {
 
       <main>
         {/* Intro: The Gap */}
-        <section id="challenge" className="py-24 bg-white">
+        <section id="challenge" className="py-24 bg-white" data-testid="section-challenge">
           <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
             <div className="md:col-span-4">
               <div className="inline-block mb-3 text-xs font-bold tracking-widest text-int-gold uppercase">The Challenge</div>
@@ -154,7 +162,7 @@ const App: React.FC = () => {
         </section>
 
         {/* Security Architecture */}
-        <section id="security" className="py-24 bg-[#F5F7FA] border-t border-gray-200">
+        <section id="security" className="py-24 bg-[#F5F7FA] border-t border-gray-200" data-testid="section-security">
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div>
@@ -188,7 +196,7 @@ const App: React.FC = () => {
         </section>
 
         {/* How It Works: Pipeline */}
-        <section className="py-24 bg-int-navy text-white overflow-hidden relative">
+        <section className="py-24 bg-int-navy text-white overflow-hidden relative" data-testid="section-pipeline">
             <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
                 <div className="w-96 h-96 rounded-full bg-int-teal blur-[100px] absolute top-[-100px] left-[-100px]"></div>
                 <div className="w-96 h-96 rounded-full bg-int-gold blur-[100px] absolute bottom-[-100px] right-[-100px]"></div>
@@ -216,7 +224,7 @@ const App: React.FC = () => {
         </section>
 
         {/* Results: ROI */}
-        <section id="roi" className="py-24 bg-white">
+        <section id="roi" className="py-24 bg-white" data-testid="section-roi">
             <div className="container mx-auto px-6">
                 <div className="max-w-4xl mx-auto text-center mb-12">
                     <h2 className="font-serif text-4xl md:text-5xl mb-6 text-int-navy">The ROI of Partnership</h2>
@@ -228,6 +236,48 @@ const App: React.FC = () => {
                     <ROIComparisonChart />
                 </div>
             </div>
+        </section>
+
+        {/* New: About Us Section */}
+        <section id="about" className="py-24 bg-int-cream border-t border-gray-200" data-testid="section-about">
+          <div className="container mx-auto px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <div>
+                <div className="inline-block mb-3 text-xs font-bold tracking-widest text-int-gold uppercase">OUR HERITAGE</div>
+                <h2 className="font-serif text-4xl md:text-5xl mb-8 text-int-navy">25 Years of Managed Excellence</h2>
+                <div className="space-y-6 text-lg text-gray-600 leading-relaxed">
+                  <p>
+                    Founded in the late 90s as a specialized Managed Service Provider, <strong>INT Inc.</strong> has navigated every major technological shift—from the birth of the cloud to the mobile revolution.
+                  </p>
+                  <p>
+                    Today, we apply that deep operational DNA to the frontier of Artificial Intelligence. We believe that for AI to be truly transformative, it must be as reliable and secure as the power grid.
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-8 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
+                  <History className="text-int-gold mb-4" size={32} />
+                  <h4 className="font-serif text-lg mb-2">Legacy</h4>
+                  <p className="text-sm text-gray-500">Established in 1999, headquartered in Lincolnshire, IL.</p>
+                </div>
+                <div className="p-8 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
+                  <Target className="text-int-teal mb-4" size={32} />
+                  <h4 className="font-serif text-lg mb-2">Mission</h4>
+                  <p className="text-sm text-gray-500">Empowering mid-market enterprise with secure AI.</p>
+                </div>
+                <div className="p-8 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
+                  <Landmark className="text-int-navy mb-4" size={32} />
+                  <h4 className="font-serif text-lg mb-2">Stability</h4>
+                  <p className="text-sm text-gray-500">Private, profitable, and client-obsessed since day one.</p>
+                </div>
+                <div className="p-8 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
+                  <ShieldCheck className="text-int-teal mb-4" size={32} />
+                  <h4 className="font-serif text-lg mb-2">Commitment</h4>
+                  <p className="text-sm text-gray-500">Uncompromising security standards and SOC 2 governance.</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* Impact: Future Proofing */}
@@ -264,7 +314,7 @@ const App: React.FC = () => {
         </section>
 
         {/* Capabilities (was Team) */}
-        <section id="capabilities" className="py-24 bg-white border-t border-gray-200">
+        <section id="capabilities" className="py-24 bg-white border-t border-gray-200" data-testid="section-capabilities">
            <div className="container mx-auto px-6">
                 <div className="text-center mb-16">
                     <div className="inline-block mb-3 text-xs font-bold tracking-widest text-int-gold uppercase">CAPABILITIES</div>
@@ -312,6 +362,7 @@ const App: React.FC = () => {
                 <p className="text-sm opacity-80">We are not consultants. We are partners.</p>
             </div>
             <div className="flex gap-8 text-sm font-medium">
+                <a href="https://intinc.com/#about" onClick={scrollToSection('about')} className="hover:text-white transition-colors cursor-pointer">About Us</a>
                 <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
                 <a href="#" className="hover:text-white transition-colors">SOC 2 Report</a>
                 <a href="#" className="hover:text-white transition-colors">Contact</a>

@@ -7,14 +7,11 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Lock, Activity, Server, Database, CheckCircle, AlertCircle, BarChart2, Brain, Rocket, Search, ArrowRight } from 'lucide-react';
 
-// --- SECURITY ARCHITECTURE DIAGRAM (Was Surface Code) ---
+// --- SECURITY ARCHITECTURE DIAGRAM ---
 export const SecurityArchitectureDiagram: React.FC = () => {
-  // 3x3 grid of "Client Endpoints" (was Data Qubits)
-  // Interspersed with "Security Controls" (was Stabilizers)
   const [activeRequests, setActiveRequests] = useState<number[]>([]);
   const [hoveredControl, setHoveredControl] = useState<number | null>(null);
   
-  // Adjacency: Endpoint Index -> Control Indices
   const adjacency: Record<number, number[]> = {
     0: [0, 1],
     1: [0, 2],
@@ -23,18 +20,17 @@ export const SecurityArchitectureDiagram: React.FC = () => {
     4: [0, 1, 2, 3], 
   };
 
-  const controlDescriptions: Record<number, string> = {
-    0: "AUTH: Verifies user identity and permissions via SSO & MFA.",
-    1: "ENC: Enforces AES-256 encryption for data at rest and in transit.",
-    2: "LOG: Records immutable ledgers of every data access event.",
-    3: "SOC2: Automated policy checks and governance monitoring.",
-  };
+  const controlDetails = [
+    { id: 0, title: "AUTH", desc: "Verifies user identity and permissions via SSO & MFA." },
+    { id: 1, title: "ENC", desc: "Enforces AES-256 encryption for data at rest and in transit." },
+    { id: 2, title: "LOG", desc: "Records immutable ledgers of every data access event." },
+    { id: 3, title: "SOC2", desc: "Automated policy checks and governance monitoring." },
+  ];
 
   const toggleRequest = (id: number) => {
     setActiveRequests(prev => prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id]);
   };
 
-  // Active controls light up when adjacent endpoints have traffic
   const activeControls = [0, 1, 2, 3].filter(controlId => {
     let hasTraffic = false;
     Object.entries(adjacency).forEach(([endpointId, controls]) => {
@@ -46,7 +42,7 @@ export const SecurityArchitectureDiagram: React.FC = () => {
   });
 
   return (
-    <div className="flex flex-col items-center p-8 bg-white rounded-xl shadow-sm border border-int-navy/10 my-8">
+    <div className="flex flex-col items-center p-8 bg-white rounded-xl shadow-sm border border-int-navy/10 my-8" data-testid="diagram-security">
       <div className="flex items-center gap-2 mb-4">
         <Shield className="text-int-teal" size={24} />
         <h3 className="font-serif text-xl text-int-navy">Zero-Trust Data Venue</h3>
@@ -55,7 +51,7 @@ export const SecurityArchitectureDiagram: React.FC = () => {
         Click the <strong>Endpoints</strong> to simulate data requests. Hover over <strong>Security Controls</strong> to see their function.
       </p>
       
-      <div className="relative w-64 h-64 bg-int-cream rounded-lg border border-int-navy/10 p-4 flex flex-wrap justify-between content-between relative">
+      <div className="relative w-64 h-64 bg-int-cream rounded-lg border border-int-navy/10 p-4 flex flex-wrap justify-between content-between">
          {/* Grid Lines */}
          <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-10">
             <div className="w-2/3 h-2/3 border border-int-navy"></div>
@@ -63,41 +59,46 @@ export const SecurityArchitectureDiagram: React.FC = () => {
             <div className="absolute h-full w-[1px] bg-int-navy"></div>
          </div>
 
-         {/* Security Controls (Stabilizers) */}
+         {/* Security Controls */}
          {[
-             {id: 0, x: '50%', y: '20%', label: 'AUTH', color: 'bg-int-teal'},
-             {id: 1, x: '20%', y: '50%', label: 'ENC', color: 'bg-int-gold'},
-             {id: 2, x: '80%', y: '50%', label: 'LOG', color: 'bg-int-gold'},
-             {id: 3, x: '50%', y: '80%', label: 'SOC2', color: 'bg-int-teal'},
-         ].map(stab => (
-             <motion.div
-                key={`ctrl-${stab.id}`}
-                className={`absolute w-12 h-12 -ml-6 -mt-6 flex items-center justify-center text-white text-[10px] font-bold rounded-lg shadow-sm transition-all duration-300 cursor-help ${hoveredControl === stab.id ? 'z-50 scale-110' : 'z-30'} ${activeControls.includes(stab.id) ? stab.color + ' opacity-100 ring-4 ring-offset-2 ring-int-cream' : 'bg-gray-300 opacity-50'}`}
-                style={{ left: stab.x, top: stab.y }}
-                onMouseEnter={() => setHoveredControl(stab.id)}
-                onMouseLeave={() => setHoveredControl(null)}
-             >
-                 {activeControls.includes(stab.id) ? <CheckCircle size={16} /> : <Lock size={14} />}
-                 
-                 <AnimatePresence>
-                   {hoveredControl === stab.id && (
-                     <motion.div
-                       initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                       exit={{ opacity: 0, y: 5, scale: 0.9 }}
-                       transition={{ duration: 0.15 }}
-                       className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-48 bg-int-navy text-white text-[10px] leading-tight p-3 rounded-md shadow-xl pointer-events-none"
-                     >
-                        <div className="text-int-gold font-bold mb-1 border-b border-white/10 pb-1">{controlDescriptions[stab.id].split(':')[0]}</div>
-                        <div className="text-gray-200">{controlDescriptions[stab.id].split(':')[1]}</div>
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-int-navy"></div>
-                     </motion.div>
-                   )}
-                 </AnimatePresence>
-             </motion.div>
-         ))}
+             {id: 0, x: '50%', y: '20%', color: 'bg-int-teal'},
+             {id: 1, x: '20%', y: '50%', color: 'bg-int-gold'},
+             {id: 2, x: '80%', y: '50%', color: 'bg-int-gold'},
+             {id: 3, x: '50%', y: '80%', color: 'bg-int-teal'},
+         ].map(stab => {
+             const detail = controlDetails.find(d => d.id === stab.id);
+             return (
+               <motion.div
+                  key={`ctrl-${stab.id}`}
+                  data-testid={`security-control-${detail?.title}`}
+                  className={`absolute w-12 h-12 -ml-6 -mt-6 flex items-center justify-center text-white text-[10px] font-bold rounded-lg shadow-sm transition-all duration-300 cursor-help ${hoveredControl === stab.id ? 'z-50 scale-110' : 'z-30'} ${activeControls.includes(stab.id) ? stab.color + ' opacity-100 ring-4 ring-offset-2 ring-int-cream' : 'bg-gray-300 opacity-50'}`}
+                  style={{ left: stab.x, top: stab.y }}
+                  onMouseEnter={() => setHoveredControl(stab.id)}
+                  onMouseLeave={() => setHoveredControl(null)}
+               >
+                   {activeControls.includes(stab.id) ? <CheckCircle size={16} /> : <Lock size={14} />}
+                   
+                   <AnimatePresence>
+                     {hoveredControl === stab.id && detail && (
+                       <motion.div
+                         data-testid={`tooltip-security-${detail.title}`}
+                         initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                         animate={{ opacity: 1, y: 0, scale: 1 }}
+                         exit={{ opacity: 0, y: 5, scale: 0.9 }}
+                         transition={{ duration: 0.15 }}
+                         className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-48 bg-slate-900 text-white text-[10px] leading-tight p-3 rounded-md shadow-2xl pointer-events-none"
+                       >
+                          <div className="text-int-gold font-bold mb-1 border-b border-white/10 pb-1 uppercase tracking-wider">{detail.title}</div>
+                          <div className="text-gray-200 mt-1">{detail.desc}</div>
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
+                       </motion.div>
+                     )}
+                   </AnimatePresence>
+               </motion.div>
+             );
+         })}
 
-         {/* Client Endpoints (Data Qubits) */}
+         {/* Client Endpoints */}
          {[
              {id: 0, x: '20%', y: '20%'}, {id: 1, x: '80%', y: '20%'},
              {id: 4, x: '50%', y: '50%'}, 
@@ -105,6 +106,7 @@ export const SecurityArchitectureDiagram: React.FC = () => {
          ].map(q => (
              <button
                 key={`end-${q.id}`}
+                data-testid={`security-endpoint-${q.id}`}
                 onClick={() => toggleRequest(q.id)}
                 className={`absolute w-8 h-8 -ml-4 -mt-4 rounded-full border-2 flex items-center justify-center transition-all duration-200 z-20 ${activeRequests.includes(q.id) ? 'bg-int-navy border-int-navy text-white shadow-lg' : 'bg-white border-gray-300 hover:border-int-teal'}`}
                 style={{ left: q.x, top: q.y }}
@@ -127,26 +129,27 @@ export const SecurityArchitectureDiagram: React.FC = () => {
   );
 };
 
-// --- SERVICE PIPELINE DIAGRAM (Was Transformer Decoder) ---
+// --- SERVICE PIPELINE DIAGRAM ---
 export const AIServicePipelineDiagram: React.FC = () => {
   const [step, setStep] = useState(0);
+  const [hoveredStep, setHoveredStep] = useState<number | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
         setStep(s => (s + 1) % 4);
-    }, 2500);
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
   const stages = [
-      { id: 0, label: "Assessment", icon: <Search size={24} />, color: "border-gray-400 bg-gray-800" },
-      { id: 1, label: "Architecture", icon: <Brain size={24} />, color: "border-int-teal bg-int-teal/20" },
-      { id: 2, label: "Deployment", icon: <Server size={24} />, color: "border-int-gold bg-int-gold/20" },
-      { id: 3, label: "Optimization", icon: <Rocket size={24} />, color: "border-white bg-white/10" }
+      { id: 0, label: "Assessment", icon: <Search size={24} />, description: "Identifying high-ROI AI opportunities and data readiness assessments." },
+      { id: 1, label: "Architecture", icon: <Brain size={24} />, description: "Designing secure, isolated multi-tenant data venue infrastructure." },
+      { id: 2, label: "Deployment", icon: <Server size={24} />, description: "Swift provisioning of SOC 2 compliant production environments." },
+      { id: 3, label: "Optimization", icon: <Rocket size={24} />, description: "Continuous cost monitoring and performance refinement." }
   ];
 
   return (
-    <div className="flex flex-col items-center p-8 bg-int-navy rounded-xl border border-int-teal/20 my-8 shadow-2xl">
+    <div className="flex flex-col items-center p-8 bg-int-navy rounded-xl border border-int-teal/20 my-8 shadow-2xl overflow-visible" data-testid="diagram-pipeline">
       <h3 className="font-serif text-xl mb-4 text-white">Managed AI Lifecycle</h3>
       <p className="text-sm text-gray-300 mb-8 text-center max-w-md">
         From initial readiness assessment to continuous model optimization, we handle the entire infrastructure pipeline.
@@ -155,24 +158,49 @@ export const AIServicePipelineDiagram: React.FC = () => {
       <div className="relative w-full max-w-lg flex items-center justify-between mb-8 px-4">
         {stages.map((stage, i) => (
             <React.Fragment key={stage.id}>
-                <div className="flex flex-col items-center gap-3 relative z-10">
+                <motion.div 
+                  className="flex flex-col items-center gap-3 relative z-10"
+                  onMouseEnter={() => setHoveredStep(i)}
+                  onMouseLeave={() => setHoveredStep(null)}
+                  data-testid={`pipeline-stage-${stage.label}`}
+                >
+                    <AnimatePresence>
+                      {hoveredStep === i && (
+                        <motion.div
+                          data-testid={`tooltip-pipeline-${stage.label}`}
+                          initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 5, scale: 0.9 }}
+                          className="absolute bottom-full mb-4 w-48 bg-slate-900 border border-int-gold/30 text-white text-[10px] leading-snug p-3 rounded-lg shadow-2xl z-[100] pointer-events-none"
+                        >
+                           <p className="font-bold text-int-gold uppercase tracking-widest mb-1 border-b border-white/10 pb-1">{stage.label}</p>
+                           <p className="text-gray-300 pt-1 leading-relaxed">{stage.description}</p>
+                           <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-900"></div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
                     <motion.div 
-                        className={`w-14 h-14 rounded-full border-2 flex items-center justify-center transition-all duration-500 ${step === i ? 'scale-110 border-white text-white shadow-[0_0_15px_rgba(255,255,255,0.3)] ' + (i===1 ? 'bg-int-teal' : i===2 ? 'bg-int-gold' : 'bg-int-navy') : 'border-gray-600 text-gray-500 bg-int-dark'}`}
-                        animate={step === i ? { y: -5 } : { y: 0 }}
+                        className={`w-14 h-14 rounded-full border-2 flex items-center justify-center transition-all duration-300 cursor-help ${step === i ? 'border-white text-white shadow-[0_0_20px_rgba(255,255,255,0.2)] ' + (i===1 ? 'bg-int-teal' : i===2 ? 'bg-int-gold' : i===3 ? 'bg-int-navy border-int-teal' : 'bg-gray-800') : 'border-gray-600 text-gray-500 bg-int-dark'} ${hoveredStep === i ? 'border-int-gold text-white shadow-[0_0_20px_rgba(197,160,89,0.4)]' : ''}`}
+                        animate={{ 
+                          scale: hoveredStep === i ? 1.15 : (step === i ? 1.1 : 1),
+                          y: step === i ? -4 : 0
+                        }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     >
                         {stage.icon}
                     </motion.div>
-                    <span className={`text-[10px] uppercase font-bold tracking-wider transition-colors duration-300 ${step === i ? 'text-white' : 'text-gray-600'}`}>
+                    <span className={`text-[10px] uppercase font-bold tracking-wider transition-colors duration-300 ${step === i || hoveredStep === i ? 'text-white' : 'text-gray-600'}`}>
                         {stage.label}
                     </span>
-                </div>
+                </motion.div>
                 {i < stages.length - 1 && (
                     <div className="flex-1 h-[2px] bg-gray-700 mx-2 relative overflow-hidden">
                         <motion.div 
                             className="absolute inset-0 bg-gradient-to-r from-int-teal to-int-gold"
                             initial={{ x: '-100%' }}
                             animate={{ x: step > i ? '0%' : '-100%' }}
-                            transition={{ duration: 0.5 }}
+                            transition={{ duration: 0.8 }}
                         />
                     </div>
                 )}
@@ -200,13 +228,12 @@ export const AIServicePipelineDiagram: React.FC = () => {
   );
 };
 
-// --- ROI COMPARISON CHART (Was Performance Metric) ---
+// --- ROI COMPARISON CHART ---
 export const ROIComparisonChart: React.FC = () => {
     type MetricType = 'success' | 'speed' | 'cost';
     const [metric, setMetric] = useState<MetricType>('success');
     const [hoveredBar, setHoveredBar] = useState<'diy' | 'int' | null>(null);
     
-    // Data config for comparison
     const data = {
         success: { 
             title: "Project Success Rate", 
@@ -221,7 +248,7 @@ export const ROIComparisonChart: React.FC = () => {
             diy: 14, 
             int: 3, 
             desc: "Average time from concept to deployment.",
-            invert: true // Lower is better
+            invert: true
         },
         cost: { 
             title: "Ops Cost Reduction", 
@@ -233,11 +260,10 @@ export const ROIComparisonChart: React.FC = () => {
     };
 
     const currentData = data[metric];
-    // Calculate max for bar height scaling
     const maxVal = Math.max(currentData.diy, currentData.int) * 1.2;
     
     return (
-        <div className="flex flex-col md:flex-row gap-8 items-center p-8 bg-white text-int-navy rounded-xl my-8 border border-gray-200 shadow-md">
+        <div className="flex flex-col md:flex-row gap-8 items-center p-8 bg-white text-int-navy rounded-xl my-8 border border-gray-200 shadow-md" data-testid="diagram-roi">
             <div className="flex-1 min-w-[240px]">
                 <h3 className="font-serif text-2xl mb-2 text-int-navy">The Partnership Advantage</h3>
                 <p className="text-gray-600 text-sm mb-6 leading-relaxed">
@@ -247,6 +273,7 @@ export const ROIComparisonChart: React.FC = () => {
                 <div className="flex flex-col gap-2 mt-4">
                     <motion.button 
                         onClick={() => setMetric('success')} 
+                        data-testid="roi-toggle-success"
                         whileHover={{ x: 5 }}
                         whileTap={{ scale: 0.98 }}
                         className={`px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 border flex items-center justify-between ${metric === 'success' ? 'bg-int-navy text-white border-int-navy shadow-lg' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}
@@ -256,6 +283,7 @@ export const ROIComparisonChart: React.FC = () => {
                     </motion.button>
                     <motion.button 
                         onClick={() => setMetric('speed')} 
+                        data-testid="roi-toggle-speed"
                         whileHover={{ x: 5 }}
                         whileTap={{ scale: 0.98 }}
                         className={`px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 border flex items-center justify-between ${metric === 'speed' ? 'bg-int-navy text-white border-int-navy shadow-lg' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}
@@ -265,6 +293,7 @@ export const ROIComparisonChart: React.FC = () => {
                     </motion.button>
                     <motion.button 
                         onClick={() => setMetric('cost')} 
+                        data-testid="roi-toggle-cost"
                         whileHover={{ x: 5 }}
                         whileTap={{ scale: 0.98 }}
                         className={`px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 border flex items-center justify-between ${metric === 'cost' ? 'bg-int-navy text-white border-int-navy shadow-lg' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}
@@ -290,32 +319,35 @@ export const ROIComparisonChart: React.FC = () => {
                     style={{ opacity: hoveredBar && hoveredBar !== 'diy' ? 0.4 : 1 }}
                     onMouseEnter={() => setHoveredBar('diy')}
                     onMouseLeave={() => setHoveredBar(null)}
+                    data-testid="roi-bar-diy"
                 >
                     <div className="flex-1 w-full flex items-end justify-center relative mb-3">
                         <AnimatePresence>
                              {hoveredBar === 'diy' && (
                                 <motion.div 
-                                    className="absolute bottom-full mb-2 bg-slate-900 text-white text-xs font-bold py-1 px-3 rounded shadow-lg whitespace-nowrap z-50 pointer-events-none"
-                                    initial={{ opacity: 0, y: 5 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 5 }}
+                                    data-testid="tooltip-roi-diy"
+                                    className="absolute bottom-full mb-3 bg-slate-900 text-white text-xs font-bold py-1.5 px-3 rounded shadow-xl whitespace-nowrap z-50 pointer-events-none"
+                                    initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.8 }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
                                 >
                                     {currentData.diy}{currentData.unit}
-                                     <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
+                                     <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-900"></div>
                                 </motion.div>
                              )}
                         </AnimatePresence>
 
                         <motion.div 
-                            className="w-full bg-gray-400 rounded-t-sm cursor-pointer origin-bottom"
+                            className="w-full bg-slate-400 rounded-t-sm cursor-pointer origin-bottom hover:bg-slate-500 transition-colors"
                             initial={{ height: 0 }}
                             animate={{ 
                                 height: `${(currentData.diy / maxVal) * 100}%`,
-                                scaleY: hoveredBar === 'diy' ? [1, 1.05, 1] : 1
+                                scale: hoveredBar === 'diy' ? 1.05 : 1
                             }}
                             transition={{ 
                                 height: { type: "spring", stiffness: 140, damping: 12, mass: 0.8 },
-                                scaleY: { duration: 1, repeat: Infinity, ease: "easeInOut" }
+                                scale: { duration: 0.2 }
                             }}
                         />
                     </div>
@@ -328,18 +360,21 @@ export const ROIComparisonChart: React.FC = () => {
                     style={{ opacity: hoveredBar && hoveredBar !== 'int' ? 0.4 : 1 }}
                     onMouseEnter={() => setHoveredBar('int')}
                     onMouseLeave={() => setHoveredBar(null)}
+                    data-testid="roi-bar-int"
                 >
                      <div className="flex-1 w-full flex items-end justify-center relative mb-3">
                          <AnimatePresence>
                              {hoveredBar === 'int' && (
                                 <motion.div 
-                                    className="absolute bottom-full mb-2 bg-slate-900 text-white text-xs font-bold py-1 px-3 rounded shadow-lg whitespace-nowrap z-50 pointer-events-none"
-                                    initial={{ opacity: 0, y: 5 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 5 }}
+                                    data-testid="tooltip-roi-int"
+                                    className="absolute bottom-full mb-3 bg-slate-900 text-white text-xs font-bold py-1.5 px-3 rounded shadow-xl whitespace-nowrap z-50 pointer-events-none"
+                                    initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.8 }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
                                 >
                                     {currentData.int}{currentData.unit}
-                                     <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
+                                     <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-900"></div>
                                 </motion.div>
                              )}
                         </AnimatePresence>
@@ -349,11 +384,11 @@ export const ROIComparisonChart: React.FC = () => {
                             initial={{ height: 0 }}
                             animate={{ 
                                 height: Math.max(2, (currentData.int / maxVal) * 100) + '%',
-                                scaleY: hoveredBar === 'int' ? [1, 1.05, 1] : 1
+                                scale: hoveredBar === 'int' ? 1.05 : 1
                             }}
                             transition={{ 
                                 height: { type: "spring", stiffness: 140, damping: 12, mass: 0.8, delay: 0.05 },
-                                scaleY: { duration: 1, repeat: Infinity, ease: "easeInOut" }
+                                scale: { duration: 0.2 }
                             }}
                         >
                            <div className="absolute inset-0 bg-white/10"></div>
