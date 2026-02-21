@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { HeroScene, DataVaultScene } from './components/QuantumScene';
-import { InveloPipelineDiagram, SOC2SprintDiagram, CostComparisonChart } from './components/Diagrams';
+import { InveloPipelineDiagram, SOC2SprintDiagram, CostComparisonChart, SecurityArchitectureDiagram } from './components/Diagrams';
 import { ArrowDown, Menu, X, ArrowRight, CheckCircle2, Brain, ShieldCheck, Database, Users, Landmark, Target, History, Timer, DollarSign, Briefcase, AlertCircle, Rocket, Flag } from 'lucide-react';
 
 const CatalystCard = ({ title, price, duration, roi, icon: Icon, delay }: { title: string, price: string, duration: string, roi: string, icon: any, delay: string }) => {
@@ -66,14 +66,14 @@ const App: React.FC = () => {
                 <span className="text-int-gold">I</span>
             </div>
             <div className="flex flex-col">
-                 <span className={`font-serif font-bold text-lg tracking-wide leading-none transition-colors ${scrolled ? 'text-int-navy' : 'text-int-navy md:text-white'}`}>
+                 <span className={`font-serif font-bold text-lg tracking-wide leading-none transition-colors ${scrolled ? 'text-int-navy' : 'text-white'}`}>
                   INT INC.
                 </span>
                 <span className={`text-[10px] font-bold tracking-[0.2em] uppercase leading-none mt-1 ${scrolled ? 'text-int-gold' : 'text-int-gold/80'}`}>InVelo</span>
             </div>
           </div>
           
-          <div className={`hidden md:flex items-center gap-8 text-sm font-medium tracking-wide ${scrolled ? 'text-gray-600' : 'text-gray-200'}`}>
+          <div className={`hidden md:flex items-center gap-8 text-sm font-medium tracking-wide ${scrolled ? 'text-gray-600' : 'text-white/90'}`}>
             <a href="#problem" onClick={scrollToSection('problem')} className="hover:text-int-gold transition-colors cursor-pointer uppercase" data-testid="nav-link-problem">The Problem</a>
             <a href="#how-it-works" onClick={scrollToSection('how-it-works')} className="hover:text-int-gold transition-colors cursor-pointer uppercase" data-testid="nav-link-works">How It Works</a>
             <a href="#use-cases" onClick={scrollToSection('use-cases')} className="hover:text-int-gold transition-colors cursor-pointer uppercase" data-testid="nav-link-use-cases">Use Cases</a>
@@ -89,7 +89,7 @@ const App: React.FC = () => {
           </div>
 
           <button 
-            className={`md:hidden p-2 ${scrolled ? 'text-int-navy' : 'text-int-navy'}`} 
+            className={`md:hidden p-2 transition-colors ${scrolled ? 'text-int-navy' : 'text-white'}`} 
             onClick={() => setMenuOpen(!menuOpen)}
             data-testid="mobile-menu-toggle"
           >
@@ -217,6 +217,7 @@ const App: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                      <div className="order-2 lg:order-1">
                         <SOC2SprintDiagram />
+                        <SecurityArchitectureDiagram />
                         <CostComparisonChart />
                      </div>
                      <div className="order-1 lg:order-2">
