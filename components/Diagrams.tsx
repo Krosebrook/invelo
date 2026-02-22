@@ -12,6 +12,14 @@ import { toSvg } from 'html-to-image';
 // Replaces SecurityArchitectureDiagram
 export const InveloPipelineDiagram: React.FC = () => {
   const [hoveredStage, setHoveredStage] = useState<number | null>(null);
+  const [currentStageId, setCurrentStageId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const day = new Date().getDay();
+    // Map Monday (1) to Stage 1, Tuesday (2) to Stage 2, ..., Sunday (0) to Stage 7
+    const stageId = day === 0 ? 7 : day;
+    setCurrentStageId(stageId);
+  }, []);
   
   // 7 Stages of InVelo
   const stages = [
@@ -60,12 +68,20 @@ export const InveloPipelineDiagram: React.FC = () => {
                             : 'bg-white border-int-navy text-int-navy hover:border-int-teal hover:text-int-teal'
                         }
                         ${hoveredStage === stage.id ? 'scale-125 z-20' : ''}
+                        ${currentStageId === stage.id ? 'border-int-teal text-int-teal shadow-[0_0_15px_rgba(13,148,136,0.3)]' : ''}
                     `}
                     style={{ left: coords[i].x, top: coords[i].y }}
                     onMouseEnter={() => setHoveredStage(stage.id)}
                     onMouseLeave={() => setHoveredStage(null)}
                     data-testid={`pipeline-stage-${stage.id}`}
                 >
+                    {currentStageId === stage.id && (
+                        <motion.div
+                            className="absolute inset-0 rounded-full border-2 border-int-teal"
+                            animate={{ scale: [1, 1.4, 1], opacity: [0.6, 0, 0.6] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                        />
+                    )}
                     {stage.icon}
 
                     <AnimatePresence>
@@ -76,7 +92,9 @@ export const InveloPipelineDiagram: React.FC = () => {
                             exit={{ opacity: 0, y: 5, scale: 0.9 }}
                             className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-48 bg-slate-900 text-white text-[10px] leading-tight p-3 rounded-md shadow-2xl pointer-events-none z-50"
                         >
-                            <div className="text-int-gold font-bold mb-1 border-b border-white/10 pb-1 uppercase tracking-wider">{stage.label}</div>
+                            <div className="text-int-gold font-bold mb-1 border-b border-white/10 pb-1 uppercase tracking-wider">
+                                {stage.label} {currentStageId === stage.id && <span className="text-int-teal ml-1">(Today)</span>}
+                            </div>
                             <div className="text-gray-200 mt-1">{stage.desc}</div>
                             <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
                         </motion.div>
@@ -85,7 +103,7 @@ export const InveloPipelineDiagram: React.FC = () => {
                 </motion.div>
                 {/* Stage Label (small) */}
                 <div 
-                    className="absolute text-[9px] font-bold uppercase tracking-wider text-gray-500 text-center w-20 -ml-10 mt-8 pointer-events-none"
+                    className={`absolute text-[9px] font-bold uppercase tracking-wider text-center w-20 -ml-10 mt-8 pointer-events-none transition-colors duration-300 ${currentStageId === stage.id ? 'text-int-teal' : 'text-gray-500'}`}
                     style={{ left: coords[i].x, top: coords[i].y }}
                 >
                     {stage.label}
