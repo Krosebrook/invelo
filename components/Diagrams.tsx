@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Lock, Activity, Server, Database, CheckCircle, AlertCircle, BarChart2, Brain, Rocket, Search, ArrowRight, Flag, ClipboardCheck, Layers, Play, UserCheck, Power } from 'lucide-react';
+import { Shield, Lock, Activity, Server, Database, CheckCircle, AlertCircle, BarChart2, Brain, Rocket, Search, ArrowRight, Flag, ClipboardCheck, Layers, Play, UserCheck, Power, Download } from 'lucide-react';
+import { toSvg } from 'html-to-image';
 
 // --- INVELO 7-STAGE PIPELINE DIAGRAM ---
 // Replaces SecurityArchitectureDiagram
@@ -315,6 +316,7 @@ export const CostComparisonChart: React.FC = () => {
 // --- SECURITY ARCHITECTURE DIAGRAM ---
 export const SecurityArchitectureDiagram: React.FC = () => {
   const [hoveredControl, setHoveredControl] = useState<string | null>(null);
+  const diagramRef = useRef<HTMLDivElement>(null);
 
   const controls = [
     { id: 'AUTH', label: 'AUTH', icon: <UserCheck size={20} />, tooltip: 'Verifies user identity and permissions' },
@@ -323,46 +325,71 @@ export const SecurityArchitectureDiagram: React.FC = () => {
     { id: 'SOC2', label: 'SOC2', icon: <Shield size={20} />, tooltip: 'Continuous compliance monitoring and reporting' },
   ];
 
+  const handleExportSvg = async () => {
+    if (diagramRef.current) {
+      try {
+        const dataUrl = await toSvg(diagramRef.current, { cacheBust: true });
+        const link = document.createElement('a');
+        link.download = 'security-architecture.svg';
+        link.href = dataUrl;
+        link.click();
+      } catch (err) {
+        console.error('Failed to export SVG', err);
+      }
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center p-6 bg-int-dark/30 rounded-xl border border-white/10 my-6 w-full" data-testid="diagram-security">
-      <div className="flex items-center gap-2 mb-6">
-        <Shield className="text-int-gold" size={20} />
-        <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-white/80">Security Controls</h3>
-      </div>
-      <div className="flex justify-around w-full gap-2">
-        {controls.map((control) => (
-          <div
-            key={control.id}
-            className="relative flex flex-col items-center"
-            onMouseEnter={() => setHoveredControl(control.id)}
-            onMouseLeave={() => setHoveredControl(null)}
-          >
-            <motion.div 
-              className={`w-14 h-14 rounded-lg border flex items-center justify-center transition-all duration-300 cursor-help ${hoveredControl === control.id ? 'border-int-gold bg-int-gold/10 text-int-gold scale-110 shadow-[0_0_15px_rgba(197,160,89,0.3)]' : 'border-white/10 text-white/60 bg-white/5'}`}
-              animate={{ scale: hoveredControl === control.id ? 1.1 : 1 }}
+    <div className="relative flex flex-col items-center p-6 bg-int-dark/30 rounded-xl border border-white/10 my-6 w-full group" data-testid="diagram-security-container">
+      <button 
+        onClick={handleExportSvg}
+        className="absolute top-4 right-4 p-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-md transition-colors opacity-0 group-hover:opacity-100 flex items-center gap-2 text-xs font-medium"
+        title="Export as SVG"
+      >
+        <Download size={14} />
+        Export
+      </button>
+      
+      <div ref={diagramRef} className="w-full flex flex-col items-center bg-int-navy/50 p-6 rounded-lg" data-testid="diagram-security">
+        <div className="flex items-center gap-2 mb-6">
+          <Shield className="text-int-gold" size={20} />
+          <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-white/80">Security Controls</h3>
+        </div>
+        <div className="flex justify-around w-full gap-2">
+          {controls.map((control) => (
+            <div
+              key={control.id}
+              className="relative flex flex-col items-center"
+              onMouseEnter={() => setHoveredControl(control.id)}
+              onMouseLeave={() => setHoveredControl(null)}
             >
-              {control.icon}
-            </motion.div>
-            <span className={`text-[9px] font-bold mt-2 tracking-widest transition-colors ${hoveredControl === control.id ? 'text-int-gold' : 'text-white/40'}`}>
-              {control.label}
-            </span>
-            
-            <AnimatePresence>
-              {hoveredControl === control.id && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 5, scale: 0.9 }}
-                  className="absolute bottom-full mb-4 w-40 bg-slate-900 border border-int-gold/30 text-white text-[10px] leading-snug p-3 rounded-lg shadow-2xl z-[100] pointer-events-none"
-                >
-                   <p className="font-bold text-int-gold uppercase tracking-widest mb-1 border-b border-white/10 pb-1">{control.label}</p>
-                   <p className="text-gray-300 pt-1 leading-relaxed">{control.tooltip}</p>
-                   <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-900"></div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        ))}
+              <motion.div 
+                className={`w-14 h-14 rounded-lg border flex items-center justify-center transition-all duration-300 cursor-help ${hoveredControl === control.id ? 'border-int-gold bg-int-gold/10 text-int-gold scale-110 shadow-[0_0_15px_rgba(197,160,89,0.3)]' : 'border-white/10 text-white/60 bg-white/5'}`}
+                animate={{ scale: hoveredControl === control.id ? 1.1 : 1 }}
+              >
+                {control.icon}
+              </motion.div>
+              <span className={`text-[9px] font-bold mt-2 tracking-widest transition-colors ${hoveredControl === control.id ? 'text-int-gold' : 'text-white/40'}`}>
+                {control.label}
+              </span>
+              
+              <AnimatePresence>
+                {hoveredControl === control.id && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 5, scale: 0.9 }}
+                    className="absolute bottom-full mb-4 w-40 bg-slate-900 border border-int-gold/30 text-white text-[10px] leading-snug p-3 rounded-lg shadow-2xl z-[100] pointer-events-none"
+                  >
+                     <p className="font-bold text-int-gold uppercase tracking-widest mb-1 border-b border-white/10 pb-1">{control.label}</p>
+                     <p className="text-gray-300 pt-1 leading-relaxed">{control.tooltip}</p>
+                     <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-900"></div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
