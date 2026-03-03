@@ -128,7 +128,6 @@ export function TestimonialsSection() {
 
               <div
                 className="flex gap-2"
-                role="tablist"
                 aria-label="Testimonial indicators"
               >
                 {testimonials.map((_, index) => (
@@ -138,9 +137,8 @@ export function TestimonialsSection() {
                     className={`w-2 h-2 rounded-full transition-colors ${
                       index === currentIndex ? "bg-int-gold" : "bg-border"
                     }`}
-                    role="tab"
-                    aria-selected={index === currentIndex}
-                    aria-label={`Testimonial ${index + 1}`}
+                    aria-label={`Go to testimonial ${index + 1}`}
+                    aria-current={index === currentIndex ? "true" : undefined}
                   />
                 ))}
               </div>

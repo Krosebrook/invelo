@@ -1,6 +1,14 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+
+interface Particle {
+  top: string;
+  left: string;
+  duration: number;
+  delay: number;
+}
 
 /**
  * CSS/SVG animated hero background replacing Three.js.
@@ -8,6 +16,18 @@ import { motion, useReducedMotion } from "framer-motion";
  */
 export function HeroScene() {
   const prefersReducedMotion = useReducedMotion();
+
+  // Deterministic positions avoid hydration mismatches from Math.random() during render
+  const particles = useMemo<Particle[]>(
+    () =>
+      Array.from({ length: 12 }, (_, i) => ({
+        top: `${15 + ((i * 37 + 17) % 70)}%`,
+        left: `${10 + ((i * 53 + 23) % 80)}%`,
+        duration: 3 + (i % 3) * 0.7,
+        delay: (i % 5) * 0.4,
+      })),
+    []
+  );
 
   if (prefersReducedMotion) {
     return (
@@ -131,22 +151,22 @@ export function HeroScene() {
 
       {/* Particle dots */}
       <div className="absolute inset-0">
-        {[...Array(12)].map((_, i) => (
+        {particles.map((p, i) => (
           <motion.div
             key={i}
             className="absolute w-1 h-1 rounded-full bg-white/30"
             style={{
-              top: `${15 + Math.random() * 70}%`,
-              left: `${10 + Math.random() * 80}%`,
+              top: p.top,
+              left: p.left,
             }}
             animate={{
               opacity: [0.2, 0.6, 0.2],
               scale: [1, 1.5, 1],
             }}
             transition={{
-              duration: 3 + Math.random() * 2,
+              duration: p.duration,
               repeat: Infinity,
-              delay: Math.random() * 2,
+              delay: p.delay,
               ease: "easeInOut",
             }}
           />

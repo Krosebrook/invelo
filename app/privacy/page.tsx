@@ -25,7 +25,7 @@ export default function PrivacyPage() {
           Privacy Policy
         </h1>
 
-        <div className="prose prose-lg text-muted space-y-6">
+        <div className="text-base md:text-lg leading-relaxed text-muted space-y-6">
           <p>
             <strong>Last updated:</strong> January 2026
           </p>
