@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { scrollToSection } from "@/lib/scroll";
 
 const navItems = [
   { id: "problem", label: "The Problem" },
@@ -21,6 +22,8 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
+    // Initialize immediately in case page loads already scrolled
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -48,22 +51,10 @@ export function Header() {
     };
   }, [menuOpen]);
 
-  const scrollToSection = useCallback(
+  const handleNavScroll = useCallback(
     (id: string) => (e: React.MouseEvent | React.KeyboardEvent) => {
-      e.preventDefault();
       setMenuOpen(false);
-      const element = document.getElementById(id);
-      if (element) {
-        const headerOffset = 100;
-        const elementPosition = element.getBoundingClientRect().top;
-        const offsetPosition =
-          elementPosition + window.pageYOffset - headerOffset;
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: "smooth",
-        });
-      }
+      scrollToSection(id, e);
     },
     []
   );
@@ -126,7 +117,7 @@ export function Header() {
               <a
                 key={item.id}
                 href={`#${item.id}`}
-                onClick={scrollToSection(item.id)}
+                onClick={handleNavScroll(item.id)}
                 className="hover:text-int-gold transition-colors cursor-pointer uppercase focus-visible:text-int-gold"
                 data-testid={`nav-link-${item.id}`}
               >
@@ -135,7 +126,7 @@ export function Header() {
             ))}
             <a
               href="#contact"
-              onClick={scrollToSection("contact")}
+              onClick={handleNavScroll("contact")}
               className="px-6 py-2 bg-int-gold text-white font-bold rounded-full hover:bg-white hover:text-int-gold transition-all shadow-sm cursor-pointer border border-int-gold focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
               data-testid="nav-cta"
             >
@@ -155,7 +146,7 @@ export function Header() {
             aria-controls="mobile-menu"
             aria-label={menuOpen ? "Close menu" : "Open menu"}
           >
-            {menuOpen ? <X size={24} /> : <Menu size={24} />}
+            {menuOpen ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
           </button>
         </div>
       </nav>
@@ -174,7 +165,7 @@ export function Header() {
             <a
               key={item.id}
               href={`#${item.id}`}
-              onClick={scrollToSection(item.id)}
+              onClick={handleNavScroll(item.id)}
               className="hover:text-int-gold transition-colors cursor-pointer uppercase focus-visible:text-int-gold"
             >
               {item.label}
@@ -182,7 +173,7 @@ export function Header() {
           ))}
           <a
             href="#contact"
-            onClick={scrollToSection("contact")}
+            onClick={handleNavScroll("contact")}
             className="px-8 py-3 bg-int-navy text-white rounded-full shadow-lg cursor-pointer hover:bg-int-gold transition-colors"
           >
             Start a Mission

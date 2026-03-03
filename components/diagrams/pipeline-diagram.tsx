@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Search,
@@ -75,14 +75,12 @@ const coords = [
  */
 export function PipelineDiagram() {
   const [hoveredStage, setHoveredStage] = useState<number | null>(null);
-  const [currentStageId, setCurrentStageId] = useState<number | null>(null);
   const prefersReducedMotion = useReducedMotion();
 
-  useEffect(() => {
+  // Compute current stage from the day of the week (Monday=1 maps to Stage 1, Sunday=0 maps to Stage 7)
+  const currentStageId = useMemo(() => {
     const day = new Date().getDay();
-    // Map Monday (1) to Stage 1, Sunday (0) to Stage 7
-    const stageId = day === 0 ? 7 : day;
-    setCurrentStageId(stageId);
+    return day === 0 ? 7 : day;
   }, []);
 
   return (
@@ -102,7 +100,6 @@ export function PipelineDiagram() {
 
       <div
         className="relative w-72 h-72 bg-int-cream rounded-lg border border-int-navy/10 p-4"
-        role="img"
         aria-label="7-stage pipeline diagram showing: Intake, Design, Build, Deploy, Handoff, Operate, and Retire phases"
       >
         {/* Connector Lines */}

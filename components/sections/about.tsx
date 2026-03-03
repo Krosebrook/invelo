@@ -35,6 +35,8 @@ const valueCards: ValueCard[] = [
   },
 ];
 
+const COMPANY_FOUNDING_YEAR = 1999;
+
 /**
  * About Us / Heritage section with company values.
  */
@@ -56,7 +58,7 @@ export function AboutSection() {
               id="about-heading"
               className="font-serif text-4xl md:text-5xl mb-8 text-int-navy"
             >
-              25 Years of Managed Excellence
+              {new Date().getFullYear() - COMPANY_FOUNDING_YEAR}+ Years of Managed Excellence
             </h2>
             <div className="space-y-6 text-lg text-muted leading-relaxed">
               <p>

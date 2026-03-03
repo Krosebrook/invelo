@@ -8,7 +8,7 @@ import { Resend } from "resend";
  * Validates input with Zod, then sends email via Resend if configured.
  */
 export async function submitContact(
-  prevState: ContactFormState,
+  _prevState: ContactFormState,
   formData: FormData
 ): Promise<ContactFormState> {
   // Parse form data
@@ -64,14 +64,16 @@ Sent from InVelo Contact Form
           "Failed to send your message. Please try again or email us directly.",
       };
     }
+  } else if (process.env.NODE_ENV !== "production") {
+    // Log when API key is missing
+    console.log(
+      "Contact form submission received but not emailed because RESEND_API_KEY is not configured."
+    );
   } else {
-    // Log submission for development/preview environments
-    console.log("Contact form submission (no RESEND_API_KEY configured):", {
-      name,
-      email,
-      company,
-      message: message.substring(0, 100) + "...",
-    });
+    return {
+      error:
+        "Email service is not configured. Please contact us directly at contact@intinc.com.",
+    };
   }
 
   return { success: true };

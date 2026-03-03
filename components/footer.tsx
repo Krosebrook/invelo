@@ -51,7 +51,7 @@ export function Footer() {
             className="hover:text-white transition-colors text-int-gold flex items-center gap-1"
           >
             HumanX 2026
-            <ArrowRight size={14} />
+            <ArrowRight size={14} aria-hidden="true" />
           </a>
         </nav>
       </div>

@@ -67,7 +67,6 @@ export function SOC2SprintDiagram() {
 
       <div
         className="relative w-full max-w-lg flex items-center justify-between mb-8 px-4"
-        role="img"
         aria-label="SOC 2 Sprint timeline: Discovery, Build, Review, Audit Pass"
       >
         {stages.map((stage, i) => {
@@ -80,8 +79,6 @@ export function SOC2SprintDiagram() {
             <div key={stage.id} className="flex items-center">
               <div
                 className="flex flex-col items-center gap-3 relative z-10"
-                onMouseEnter={() => setHoveredStep(i)}
-                onMouseLeave={() => setHoveredStep(null)}
               >
                 <AnimatePresence>
                   {isHovered && (
@@ -125,6 +122,10 @@ export function SOC2SprintDiagram() {
                           y: isActive ? -4 : 0,
                         }
                   }
+                  onMouseEnter={() => setHoveredStep(i)}
+                  onMouseLeave={() => setHoveredStep(null)}
+                  onFocus={() => setHoveredStep(i)}
+                  onBlur={() => setHoveredStep(null)}
                   aria-label={`${stage.label}: ${stage.description}`}
                 >
                   <Icon size={24} aria-hidden="true" />

@@ -2,27 +2,12 @@
 
 import { ArrowDown } from "lucide-react";
 import { HeroScene } from "@/components/hero-scene";
+import { scrollToSection } from "@/lib/scroll";
 
 /**
  * Hero section with animated background and main CTA.
  */
 export function HeroSection() {
-  const scrollToSection = (id: string) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    const element = document.getElementById(id);
-    if (element) {
-      const headerOffset = 100;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition =
-        elementPosition + window.pageYOffset - headerOffset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth",
-      });
-    }
-  };
-
   return (
     <header className="relative min-h-screen flex items-center justify-center overflow-hidden bg-int-dark">
       <HeroScene />
@@ -57,7 +42,7 @@ export function HeroSection() {
         <div className="flex justify-center mt-12">
           <a
             href="#how-it-works"
-            onClick={scrollToSection("how-it-works")}
+            onClick={(e) => scrollToSection("how-it-works", e)}
             data-testid="hero-discover-cta"
             className="group relative inline-flex items-center gap-4 px-12 py-5 rounded-full border border-int-gold/80 bg-int-navy/40 text-int-gold shadow-[0_0_20px_rgba(197,160,89,0.2)] backdrop-blur-md transition-all duration-500 hover:bg-int-gold hover:text-int-navy hover:shadow-[0_0_60px_rgba(197,160,89,0.6)] hover:-translate-y-1 hover:scale-105 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-int-dark"
           >
