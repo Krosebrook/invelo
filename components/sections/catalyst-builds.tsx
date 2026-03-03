@@ -99,7 +99,7 @@ function CatalystCard({
         className="mb-6 text-int-navy group-hover:text-int-gold transition-colors duration-300"
         aria-hidden="true"
       >
-        <Icon size={40} strokeWidth={1.5} />
+        <Icon size={40} strokeWidth={1.5} aria-hidden="true" />
       </div>
 
       <h3 className="font-serif text-xl text-int-navy text-center mb-2">
