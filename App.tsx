@@ -535,8 +535,8 @@ const App: React.FC = () => {
       </main>
 
       <footer className="bg-int-dark text-gray-400 py-16 border-t border-white/10">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="text-center md:text-left">
+        <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12">
+            <div className="md:col-span-5 text-center md:text-left">
                 <div className="text-white font-serif font-bold text-3xl mb-2 flex items-center gap-2 justify-center md:justify-start">
                     InVelo
                 </div>
@@ -546,16 +546,36 @@ const App: React.FC = () => {
                     </div>
                     <span className="text-[10px] font-bold tracking-widest uppercase text-white/80">An INT Inc. Company</span>
                 </div>
-                <p className="text-sm opacity-80 mb-2">We are not consultants. We are partners.</p>
+                <p className="text-sm opacity-80 mb-8">We are not consultants. We are partners.</p>
+                <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm font-medium">
+                    <a href="https://intinc.com/#about" onClick={scrollToSection('about')} className="hover:text-white transition-colors cursor-pointer">About</a>
+                    <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+                    <a href="#" className="hover:text-white transition-colors">SOC 2 Report</a>
+                    <a href="https://humanx.co" className="hover:text-white transition-colors text-int-gold">HumanX 2026</a>
+                </div>
             </div>
-            <div className="flex flex-wrap justify-center gap-8 text-sm font-medium">
-                <a href="https://intinc.com/#about" onClick={scrollToSection('about')} className="hover:text-white transition-colors cursor-pointer">About</a>
-                <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-                <a href="#" className="hover:text-white transition-colors">SOC 2 Report</a>
-                <a href="https://humanx.co" className="hover:text-white transition-colors text-int-gold">HumanX 2026</a>
+
+            <div className="md:col-span-2"></div>
+
+            <div className="md:col-span-5">
+                <h4 className="text-white font-serif text-xl mb-4 text-center md:text-left">Get in Touch</h4>
+                <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                    <div>
+                        <input type="text" placeholder="Name" className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-int-gold transition-colors" />
+                    </div>
+                    <div>
+                        <input type="email" placeholder="Email" className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-int-gold transition-colors" />
+                    </div>
+                    <div>
+                        <textarea placeholder="Message" rows={3} className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-int-gold transition-colors resize-none"></textarea>
+                    </div>
+                    <button type="submit" className="px-6 py-2 bg-int-gold text-white font-bold rounded-md hover:bg-white hover:text-int-gold transition-all w-full">
+                        Send Message
+                    </button>
+                </form>
             </div>
         </div>
-        <div className="text-center mt-12 text-xs text-gray-600">
+        <div className="text-center mt-16 text-xs text-gray-600 border-t border-white/5 pt-8">
             © {new Date().getFullYear()} INT Inc. All rights reserved. | Lincolnshire, IL
         </div>
       </footer>
