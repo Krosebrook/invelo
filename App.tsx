@@ -1,597 +1,540 @@
 
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Palette, 
+  Eraser, 
+  RotateCcw, 
+  RotateCw, 
+  Trash2, 
+  CheckCircle, 
+  Home, 
+  ChevronLeft, 
+  ChevronRight,
+  Sparkles,
+  Volume2,
+  VolumeX,
+  Heart,
+  Star,
+  Sun,
+  Cloud,
+  Bird,
+  Fish,
+  Rocket,
+  Eye,
+  EyeOff,
+  Mic,
+  MicOff
+} from 'lucide-react';
 
-import React, { useState, useEffect } from 'react';
-import { HeroScene, DataVaultScene } from './components/QuantumScene';
-import { InveloPipelineDiagram, SOC2SprintDiagram, CostComparisonChart, SecurityArchitectureDiagram } from './components/Diagrams';
-import { ArrowDown, ArrowUp, Menu, X, ArrowRight, CheckCircle2, Brain, ShieldCheck, Database, Users, Landmark, Target, History, Timer, DollarSign, Briefcase, AlertCircle, Rocket, Flag, Cloud, GitMerge, Zap, TerminalSquare } from 'lucide-react';
+// --- Types ---
 
-const CatalystCard = ({ title, price, duration, roi, icon: Icon, delay }: { title: string, price: string, duration: string, roi: string, icon: any, delay: string }) => {
-  return (
-    <div className="flex flex-col group animate-fade-in-up items-center p-8 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 w-full h-full hover:border-int-gold/50" style={{ animationDelay: delay }}>
-      <div className="mb-6 text-int-navy group-hover:text-int-gold transition-colors duration-300">
-        <Icon size={40} strokeWidth={1.5} />
-      </div>
-      <h3 className="font-serif text-xl text-int-navy text-center mb-2">{title}</h3>
-      <div className="flex gap-2 mb-4 text-[10px] font-bold uppercase tracking-wider text-gray-500">
-          <span className="px-2 py-1 bg-gray-100 rounded">{duration}</span>
-          <span className="px-2 py-1 bg-int-cream text-int-navy rounded border border-int-gold/20">{price}</span>
-      </div>
-      <div className="w-8 h-0.5 bg-int-gold mb-4 opacity-60"></div>
-      <p className="text-sm text-gray-600 font-medium text-center leading-relaxed mb-4">
-        <span className="block text-xs text-int-teal font-bold uppercase mb-1">ROI Outcome</span>
-        {roi}
-      </p>
-    </div>
-  );
+type Scene = {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  bgColor: string;
+  paths: string[]; // SVG paths for outlines
+  livingElements: React.ReactNode[];
 };
 
-const ServiceCard = ({ title, description, icon: Icon, delay }: { title: string, description: string, icon: any, delay: string }) => {
-  return (
-    <div className="p-8 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in-up" style={{ animationDelay: delay }}>
-      <div className="w-12 h-12 bg-int-cream rounded-lg flex items-center justify-center text-int-gold mb-6">
-        <Icon size={24} />
-      </div>
-      <h3 className="font-serif text-xl text-int-navy mb-3">{title}</h3>
-      <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
-    </div>
-  );
+type Color = {
+  hex: string;
+  name: string;
 };
 
-const App: React.FC = () => {
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [featureFlags, setFeatureFlags] = useState({
-    showHero: true,
-    showProblem: true,
-    showHowItWorks: true,
-    showSoc2Story: true,
-    showUseCases: true,
-    showMethodology: true,
-    showAbout: true,
-    showWhyInt: true,
-    showContact: true,
-    showServices: true,
-  });
+// --- Constants ---
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const getFlag = (key: string, defaultValue: boolean) => {
-      if (params.has(key)) {
-        return params.get(key) !== 'false' && params.get(key) !== '0';
-      }
-      return defaultValue;
-    };
+const COLORS: Color[] = [
+  { hex: '#FFB7B2', name: 'Soft Red' },
+  { hex: '#FFDAC1', name: 'Peach' },
+  { hex: '#E2F0CB', name: 'Light Green' },
+  { hex: '#B5EAD7', name: 'Mint' },
+  { hex: '#C7CEEA', name: 'Lavender' },
+  { hex: '#FF9AA2', name: 'Pink' },
+  { hex: '#FFB347', name: 'Orange' },
+  { hex: '#FDFD96', name: 'Yellow' },
+  { hex: '#77DD77', name: 'Green' },
+  { hex: '#AEC6CF', name: 'Blue' },
+  { hex: '#B19CD9', name: 'Purple' },
+  { hex: '#FFFFFF', name: 'White' },
+];
 
-    setFeatureFlags({
-      showHero: getFlag('hero', true),
-      showProblem: getFlag('problem', true),
-      showHowItWorks: getFlag('howItWorks', true),
-      showSoc2Story: getFlag('soc2', true),
-      showUseCases: getFlag('useCases', true),
-      showMethodology: getFlag('methodology', true),
-      showAbout: getFlag('about', true),
-      showWhyInt: getFlag('whyInt', true),
-      showContact: getFlag('contact', true),
-      showServices: getFlag('services', true),
-    });
-  }, []);
+const COLOR_BLIND_COLORS: Color[] = [
+  { hex: '#000000', name: 'Black' },
+  { hex: '#E69F00', name: 'Orange' },
+  { hex: '#56B4E9', name: 'Sky Blue' },
+  { hex: '#009E73', name: 'Bluish Green' },
+  { hex: '#F0E442', name: 'Yellow' },
+  { hex: '#0072B2', name: 'Blue' },
+  { hex: '#D55E00', name: 'Vermillion' },
+  { hex: '#CC79A7', name: 'Reddish Purple' },
+  { hex: '#999999', name: 'Gray' },
+  { hex: '#FFFFFF', name: 'White' },
+];
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+const SCENES: Scene[] = [
+  {
+    id: 'forest',
+    name: 'Happy Forest',
+    icon: <Bird className="w-8 h-8" />,
+    bgColor: '#E2F0CB',
+    paths: [
+      "M100,300 L150,300 L150,250 L100,250 Z", // Trunk
+      "M50,250 L200,250 L125,150 Z", // Leaves
+      "M350,80 A30,30 0 1,1 350,81 Z", // Sun
+      "M250,150 Q270,130 290,150 Q270,170 250,150" // Bird
+    ],
+    livingElements: [
+      <motion.div key="sun" animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="absolute top-10 right-20 text-[#FDFD96]"><Sun size={60} fill="currentColor" /></motion.div>,
+      <motion.div key="bird" animate={{ x: [0, 100, 0], y: [0, -20, 0] }} transition={{ duration: 10, repeat: Infinity }} className="absolute top-40 left-60 text-[#FFB7B2]"><Bird size={40} fill="currentColor" /></motion.div>
+    ]
+  },
+  {
+    id: 'ocean',
+    name: 'Deep Sea',
+    icon: <Fish className="w-8 h-8" />,
+    bgColor: '#AEC6CF',
+    paths: [
+      "M100,200 Q150,150 200,200 Q150,250 100,200 M200,200 L230,180 L230,220 Z", // Fish
+      "M300,350 Q280,300 300,250 Q320,200 300,150", // Seaweed
+      "M350,350 Q370,300 350,250 Q330,200 350,150", // Seaweed
+      "M150,100 A10,10 0 1,1 150,101 Z", // Bubble
+      "M170,80 A5,5 0 1,1 170,81 Z" // Bubble
+    ],
+    livingElements: [
+      <motion.div key="fish" animate={{ x: [0, 50, 0], scaleX: [1, -1, 1] }} transition={{ duration: 5, repeat: Infinity }} className="absolute top-1/2 left-1/4 text-[#FFDAC1]"><Fish size={50} fill="currentColor" /></motion.div>,
+      <motion.div key="bubble" animate={{ y: [0, -100], opacity: [1, 0] }} transition={{ duration: 4, repeat: Infinity }} className="absolute bottom-20 left-1/3 text-white/50"><div className="w-4 h-4 rounded-full border-2 border-current" /></motion.div>
+    ]
+  },
+  {
+    id: 'space',
+    name: 'Space Friends',
+    icon: <Rocket className="w-8 h-8" />,
+    bgColor: '#C7CEEA',
+    paths: [
+      "M200,100 L230,200 L170,200 Z", // Top
+      "M170,200 L230,200 L230,300 L170,300 Z", // Body
+      "M170,300 L150,330 L170,300 M230,300 L250,330 L230,300", // Fins
+      "M350,100 L360,130 L390,130 L365,150 L375,180 L350,160 L325,180 L335,150 L310,130 L340,130 Z", // Star
+      "M50,100 A40,40 0 1,1 50,180 A30,30 0 1,0 50,100" // Moon
+    ],
+    livingElements: [
+      <motion.div key="rocket" animate={{ y: [0, -20, 0], rotate: [0, 2, -2, 0] }} transition={{ duration: 3, repeat: Infinity }} className="absolute top-1/3 left-1/4 text-[#FF9AA2]"><Rocket size={60} fill="currentColor" /></motion.div>,
+      <motion.div key="star" animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }} className="absolute top-20 right-40 text-[#FDFD96]"><Star size={30} fill="currentColor" /></motion.div>
+    ]
+  }
+];
 
-  const scrollToSection = (id: string) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    setMenuOpen(false);
-    const element = document.getElementById(id);
-    if (element) {
-      const headerOffset = 100;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+// --- Helper Functions ---
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
+const hexToRgb = (hex: string) => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : { r: 0, g: 0, b: 0 };
+};
+
+const colorsMatch = (a: Uint8ClampedArray, b: { r: number, g: number, b: number }, tolerance = 10) => {
+  return Math.abs(a[0] - b.r) <= tolerance &&
+         Math.abs(a[1] - b.g) <= tolerance &&
+         Math.abs(a[2] - b.b) <= tolerance;
+};
+
+// --- Components ---
+
+const LivingColoringWorld: React.FC = () => {
+  const [currentScene, setCurrentScene] = useState<Scene | null>(null);
+  const [selectedColor, setSelectedColor] = useState<Color>(COLORS[0]);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isNarrationOn, setIsNarrationOn] = useState(false);
+  const [isColorBlindMode, setIsColorBlindMode] = useState(false);
+  const [history, setHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [isFinished, setIsFinished] = useState(false);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const outlineCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  const speak = (text: string) => {
+    if (isNarrationOn && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1.2;
+      window.speechSynthesis.speak(utterance);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#F9F8F4] text-int-navy selection:bg-int-gold selection:text-white">
-      
-      {/* Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'}`}>
-        <div className="container mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} data-testid="nav-logo">
-            <div className="w-10 h-10 bg-int-navy rounded-sm flex items-center justify-center text-white font-sans font-bold text-xl shadow-md">
-                <span className="text-int-gold">I</span>
-            </div>
-            <div className="flex flex-col">
-                 <span className={`font-serif font-bold text-xl tracking-wide leading-none transition-colors ${scrolled ? 'text-int-navy' : 'text-white'}`}>
-                  InVelo
-                </span>
-                <span className={`text-[9px] font-bold tracking-[0.2em] uppercase leading-none mt-1 ${scrolled ? 'text-int-navy/60' : 'text-white/60'}`}>An INT Inc. Company</span>
-            </div>
-          </div>
-          
-          <div className={`hidden md:flex items-center gap-8 text-sm font-medium tracking-wide ${scrolled ? 'text-gray-600' : 'text-white/90'}`}>
-            {featureFlags.showProblem && <a href="#problem" onClick={scrollToSection('problem')} className="hover:text-int-gold transition-colors cursor-pointer uppercase" data-testid="nav-link-problem">The Problem</a>}
-            {featureFlags.showHowItWorks && <a href="#how-it-works" onClick={scrollToSection('how-it-works')} className="hover:text-int-gold transition-colors cursor-pointer uppercase" data-testid="nav-link-works">How It Works</a>}
-            {featureFlags.showServices && <a href="#services" onClick={scrollToSection('services')} className="hover:text-int-gold transition-colors cursor-pointer uppercase" data-testid="nav-link-services">Services</a>}
-            {featureFlags.showUseCases && <a href="#use-cases" onClick={scrollToSection('use-cases')} className="hover:text-int-gold transition-colors cursor-pointer uppercase" data-testid="nav-link-use-cases">Use Cases</a>}
-            {featureFlags.showMethodology && <a href="#methodology" onClick={scrollToSection('methodology')} className="hover:text-int-gold transition-colors cursor-pointer uppercase" data-testid="nav-link-methodology">Methodology</a>}
-            {featureFlags.showAbout && <a href="https://intinc.com/#about" onClick={scrollToSection('about')} className="hover:text-int-gold transition-colors cursor-pointer uppercase" data-testid="nav-link-about">About</a>}
-            {featureFlags.showContact && <a 
-              href="#contact" 
-              onClick={scrollToSection('contact')}
-              className="px-6 py-2 bg-int-gold text-white font-bold rounded-full hover:bg-white hover:text-int-gold transition-all shadow-sm cursor-pointer border border-int-gold"
-              data-testid="nav-cta"
-            >
-              Start a Mission
-            </a>}
-          </div>
+  // Initialize canvas
+  useEffect(() => {
+    if (currentScene && canvasRef.current && outlineCanvasRef.current) {
+      const canvas = canvasRef.current;
+      const outlineCanvas = outlineCanvasRef.current;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      const oCtx = outlineCanvas.getContext('2d');
 
+      if (ctx && oCtx) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        oCtx.clearRect(0, 0, outlineCanvas.width, outlineCanvas.height);
+
+        oCtx.strokeStyle = '#333333';
+        oCtx.lineWidth = 4;
+        oCtx.lineJoin = 'round';
+        oCtx.lineCap = 'round';
+
+        currentScene.paths.forEach(pathStr => {
+          const p = new Path2D(pathStr);
+          oCtx.stroke(p);
+        });
+
+        const initialState = canvas.toDataURL();
+        setHistory([initialState]);
+        setHistoryIndex(0);
+        setIsFinished(false);
+        speak(`Welcome to the ${currentScene.name}! Let's color together.`);
+      }
+    }
+  }, [currentScene]);
+
+  const saveToHistory = useCallback(() => {
+    if (canvasRef.current) {
+      const newState = canvasRef.current.toDataURL();
+      const newHistory = history.slice(0, historyIndex + 1);
+      newHistory.push(newState);
+      if (newHistory.length > 20) newHistory.shift();
+      setHistory(newHistory);
+      setHistoryIndex(newHistory.length - 1);
+    }
+  }, [history, historyIndex]);
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      const prevIndex = historyIndex - 1;
+      const img = new Image();
+      img.src = history[prevIndex];
+      img.onload = () => {
+        const ctx = canvasRef.current?.getContext('2d');
+        ctx?.drawImage(img, 0, 0);
+        setHistoryIndex(prevIndex);
+      };
+      speak("Oops! Let's try again.");
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      const nextIndex = historyIndex + 1;
+      const img = new Image();
+      img.src = history[nextIndex];
+      img.onload = () => {
+        const ctx = canvasRef.current?.getContext('2d');
+        ctx?.drawImage(img, 0, 0);
+        setHistoryIndex(nextIndex);
+      };
+    }
+  };
+
+  const handleClear = () => {
+    if (canvasRef.current) {
+      const ctx = canvasRef.current.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        saveToHistory();
+        speak("All clean! Ready for a new masterpiece.");
+      }
+    }
+  };
+
+  const floodFill = (x: number, y: number, fillColor: Color) => {
+    const canvas = canvasRef.current;
+    const outlineCanvas = outlineCanvasRef.current;
+    if (!canvas || !outlineCanvas) return;
+
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const oCtx = outlineCanvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx || !oCtx) return;
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const outlineData = oCtx.getImageData(0, 0, outlineCanvas.width, outlineCanvas.height);
+    const pixels = imageData.data;
+    const oPixels = outlineData.data;
+
+    const targetRgb = {
+      r: pixels[(y * canvas.width + x) * 4],
+      g: pixels[(y * canvas.width + x) * 4 + 1],
+      b: pixels[(y * canvas.width + x) * 4 + 2]
+    };
+
+    const fillRgb = hexToRgb(fillColor.hex);
+
+    if (colorsMatch(new Uint8ClampedArray([targetRgb.r, targetRgb.g, targetRgb.b]), fillRgb)) return;
+    if (oPixels[(y * canvas.width + x) * 4 + 3] > 50) return;
+
+    const stack: [number, number][] = [[x, y]];
+    const visited = new Uint8Array(canvas.width * canvas.height);
+
+    while (stack.length > 0) {
+      const [curX, curY] = stack.pop()!;
+      const idx = curY * canvas.width + curX;
+
+      if (visited[idx]) continue;
+      visited[idx] = 1;
+
+      const pIdx = idx * 4;
+      const curColor = new Uint8ClampedArray([pixels[pIdx], pixels[pIdx + 1], pixels[pIdx + 2]]);
+
+      if (colorsMatch(curColor, targetRgb) && oPixels[pIdx + 3] < 50) {
+        pixels[pIdx] = fillRgb.r;
+        pixels[pIdx + 1] = fillRgb.g;
+        pixels[pIdx + 2] = fillRgb.b;
+        pixels[pIdx + 3] = 255;
+
+        if (curX > 0) stack.push([curX - 1, curY]);
+        if (curX < canvas.width - 1) stack.push([curX + 1, curY]);
+        if (curY > 0) stack.push([curX, curY - 1]);
+        if (curY < canvas.height - 1) stack.push([curX, curY + 1]);
+      }
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+    saveToHistory();
+  };
+
+  const handleCanvasClick = (e: React.MouseEvent | React.TouchEvent) => {
+    if (isFinished) return;
+    
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    let clientX, clientY;
+
+    if ('touches' in e) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
+    const x = Math.floor((clientX - rect.left) * (canvas.width / rect.width));
+    const y = Math.floor((clientY - rect.top) * (canvas.height / rect.height));
+
+    floodFill(x, y, selectedColor);
+  };
+
+  const handleFinish = () => {
+    setIsFinished(true);
+    speak("Wow! Your world is coming to life! It looks magical.");
+  };
+
+  const palette = isColorBlindMode ? COLOR_BLIND_COLORS : COLORS;
+
+  // --- Renderers ---
+
+  if (!currentScene) {
+    return (
+      <div className="min-h-screen bg-[#FDFD96] flex flex-col items-center justify-center p-6 font-sans">
+        <motion.h1 
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="text-5xl md:text-7xl font-bold text-[#FF9AA2] mb-12 text-center drop-shadow-sm"
+          style={{ fontFamily: '"Comic Sans MS", "Chalkboard SE", cursive' }}
+        >
+          Living Coloring World
+        </motion.h1>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl">
+          {SCENES.map((scene, idx) => (
+            <motion.button
+              key={scene.id}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              onClick={() => setCurrentScene(scene)}
+              className="bg-white p-8 rounded-3xl shadow-xl flex flex-col items-center gap-4 border-8 border-transparent hover:border-[#B5EAD7] transition-colors"
+            >
+              <div className="w-24 h-24 rounded-full flex items-center justify-center" style={{ backgroundColor: scene.bgColor }}>
+                {scene.icon}
+              </div>
+              <span className="text-2xl font-bold text-gray-700">{scene.name}</span>
+            </motion.button>
+          ))}
+        </div>
+
+        <div className="mt-16 flex gap-6">
           <button 
-            className={`md:hidden p-2 transition-colors ${scrolled ? 'text-int-navy' : 'text-white'}`} 
-            onClick={() => setMenuOpen(!menuOpen)}
-            data-testid="mobile-menu-toggle"
+            onClick={() => {
+              const next = !isNarrationOn;
+              setIsNarrationOn(next);
+              if (next) speak("Narration is now on! I will help you play.");
+            }}
+            className={`p-4 rounded-full shadow-md transition-colors ${isNarrationOn ? 'bg-[#B5EAD7] text-[#4A7C59]' : 'bg-white text-gray-400'}`}
+            title="Toggle Narration"
           >
-            {menuOpen ? <X /> : <Menu />}
+            {isNarrationOn ? <Mic /> : <MicOff />}
+          </button>
+          <button 
+            onClick={() => setIsColorBlindMode(!isColorBlindMode)}
+            className={`p-4 rounded-full shadow-md transition-colors ${isColorBlindMode ? 'bg-[#C7CEEA] text-[#5A6A9A]' : 'bg-white text-gray-400'}`}
+            title="Toggle Color Blind Mode"
+          >
+            {isColorBlindMode ? <Eye /> : <EyeOff />}
+          </button>
+          <button 
+            onClick={() => setIsMuted(!isMuted)}
+            className="p-4 bg-white rounded-full shadow-md text-gray-400 hover:text-[#FF9AA2]"
+            title="Toggle Sound"
+          >
+            {isMuted ? <VolumeX /> : <Volume2 />}
           </button>
         </div>
-      </nav>
+      </div>
+    );
+  }
 
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="fixed inset-0 z-40 bg-int-cream flex flex-col items-center justify-center gap-8 text-xl font-serif animate-fade-in text-int-navy" data-testid="mobile-menu-container">
-            {featureFlags.showProblem && <a href="#problem" onClick={scrollToSection('problem')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">The Problem</a>}
-            {featureFlags.showHowItWorks && <a href="#how-it-works" onClick={scrollToSection('how-it-works')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">How It Works</a>}
-            {featureFlags.showServices && <a href="#services" onClick={scrollToSection('services')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">Services</a>}
-            {featureFlags.showUseCases && <a href="#use-cases" onClick={scrollToSection('use-cases')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">Use Cases</a>}
-            {featureFlags.showMethodology && <a href="#methodology" onClick={scrollToSection('methodology')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">Methodology</a>}
-            {featureFlags.showAbout && <a href="https://intinc.com/#about" onClick={scrollToSection('about')} className="hover:text-int-gold transition-colors cursor-pointer uppercase">About</a>}
-            {featureFlags.showContact && <a 
-              href="#contact"
-              onClick={() => { scrollToSection('contact'); setMenuOpen(false); }} 
-              className="px-8 py-3 bg-int-navy text-white rounded-full shadow-lg cursor-pointer"
-            >
-              Start a Mission
-            </a>}
+  return (
+    <div className="min-h-screen flex flex-col bg-[#F9F8F4] overflow-hidden">
+      {/* Top Bar */}
+      <div className="p-4 flex items-center justify-between bg-white shadow-sm z-10">
+        <button 
+          onClick={() => setCurrentScene(null)}
+          className="flex items-center gap-2 px-6 py-3 bg-gray-100 rounded-full text-gray-600 font-bold hover:bg-gray-200 transition-colors text-lg"
+        >
+          <Home size={24} />
+          <span className="hidden sm:inline">Home</span>
+        </button>
+
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={handleUndo}
+            disabled={historyIndex <= 0}
+            className="p-4 bg-white border-2 border-gray-100 rounded-full text-gray-500 disabled:opacity-30 hover:bg-gray-50 shadow-sm"
+          >
+            <RotateCcw size={24} />
+          </button>
+          <button 
+            onClick={handleRedo}
+            disabled={historyIndex >= history.length - 1}
+            className="p-4 bg-white border-2 border-gray-100 rounded-full text-gray-500 disabled:opacity-30 hover:bg-gray-50 shadow-sm"
+          >
+            <RotateCw size={24} />
+          </button>
+          <button 
+            onClick={handleClear}
+            className="p-4 bg-white border-2 border-gray-100 rounded-full text-gray-500 hover:text-red-400 hover:bg-red-50 shadow-sm"
+          >
+            <Trash2 size={24} />
+          </button>
         </div>
-      )}
 
-      {/* Hero Section */}
-      {featureFlags.showHero && (
-      <header className="relative h-screen flex items-center justify-center overflow-hidden bg-int-dark">
-        <HeroScene />
-        
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(30,58,95,0.4)_0%,rgba(15,23,42,0.8)_60%,rgba(15,23,42,1)_100%)]" />
+        <button 
+          onClick={handleFinish}
+          className="flex items-center gap-2 px-8 py-3 bg-[#B5EAD7] text-[#4A7C59] font-bold rounded-full shadow-lg hover:bg-[#A0D9C1] transition-transform active:scale-95 text-lg"
+        >
+          <Sparkles size={24} />
+          <span>Magic!</span>
+        </button>
+      </div>
 
-        <div className="relative z-10 container mx-auto px-6 text-center text-white">
-          <div className="inline-block mb-6 px-4 py-1 border border-int-teal/50 text-int-teal text-xs tracking-[0.25em] uppercase font-bold rounded-full backdrop-blur-md bg-int-navy/30 shadow-[0_0_15px_rgba(13,148,136,0.3)]">
-            HumanX 2026 • San Francisco
-          </div>
-          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-medium leading-tight mb-8 drop-shadow-lg">
-            InVelo <br/>
-            <span className="italic font-light text-gray-300 text-3xl md:text-5xl block mt-4">Mission-Complete AI Services</span>
-          </h1>
-          <p className="max-w-2xl mx-auto text-lg md:text-xl text-gray-300 font-light leading-relaxed mb-12">
-            INT Inc. builds catalyst tools that solve one problem fast—compliance dashboards, onboarding accelerators, crisis response systems—then hands you the keys. 
-            <span className="block mt-4 text-int-gold">No lock-in. No consultant debt. Just outcomes.</span>
-          </p>
+      {/* Main Content */}
+      <div className="flex-1 relative flex items-center justify-center p-4 md:p-8">
+        <div className="relative bg-white rounded-[40px] shadow-2xl overflow-hidden border-[12px] border-white" style={{ width: '900px', height: '600px', maxWidth: '100%', maxHeight: '70vh' }}>
+          {/* Coloring Layer */}
+          <canvas 
+            ref={canvasRef}
+            width={900}
+            height={600}
+            onClick={handleCanvasClick}
+            onTouchStart={handleCanvasClick}
+            className="absolute inset-0 w-full h-full cursor-crosshair"
+          />
           
-          <div className="flex justify-center mt-12">
-             <a 
-               href="#how-it-works" 
-               onClick={scrollToSection('how-it-works')} 
-               data-testid="hero-discover-cta"
-               className="group relative inline-flex items-center gap-4 px-12 py-5 rounded-full border border-int-gold/80 bg-int-navy/40 text-int-gold shadow-[0_0_20px_rgba(197,160,89,0.2)] backdrop-blur-md transition-all duration-500 hover:bg-int-gold hover:text-int-navy hover:shadow-[0_0_60px_rgba(197,160,89,0.6)] hover:-translate-y-1 hover:scale-105"
-             >
-                <span className="text-sm font-bold tracking-[0.3em] uppercase transition-colors duration-300">See How It Works</span>
-                <ArrowDown size={20} className="transition-transform duration-500 group-hover:translate-y-1" />
-             </a>
-          </div>
-        </div>
-      </header>
-      )}
+          {/* Outline Layer */}
+          <canvas 
+            ref={outlineCanvasRef}
+            width={900}
+            height={600}
+            className="absolute inset-0 w-full h-full pointer-events-none opacity-90"
+          />
 
-      <main>
-        {/* Intro: The SaaS Trap */}
-        {featureFlags.showProblem && (
-        <section id="problem" className="py-24 bg-white" data-testid="section-problem">
-          <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
-            <div className="md:col-span-4">
-              <div className="inline-block mb-3 text-xs font-bold tracking-widest text-int-gold uppercase">The Problem</div>
-              <h2 className="font-serif text-4xl mb-6 leading-tight text-int-navy">The SaaS Trap</h2>
-              <div className="w-20 h-1 bg-int-teal mb-6"></div>
-            </div>
-            <div className="md:col-span-8 text-lg text-gray-600 leading-relaxed space-y-6">
-              <p>
-                <span className="text-5xl float-left mr-3 mt-[-8px] font-serif text-int-navy">$21M</span> Average enterprise waste on underused software licenses annually. Why? Because you're buying long-term platforms for short-term problems.
-              </p>
-              <p>
-                Agentic AI has changed the math. Tools that used to take months to build now take weeks. The $300B SaaS selloff proved that enterprises are tired of rent-seeking software.
-              </p>
-              <p className="font-medium text-int-navy">
-                Enterprises don't need another platform with a 3-year contract. They need the right tool for THIS quarter.
-              </p>
-            </div>
-          </div>
-        </section>
-        )}
-
-        {/* How It Works: Pipeline */}
-        {featureFlags.showHowItWorks && (
-        <section id="how-it-works" className="py-24 bg-[#F5F7FA] border-t border-gray-200" data-testid="section-how-it-works">
-            <div className="container mx-auto px-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                    <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white text-int-navy text-xs font-bold tracking-widest uppercase rounded-full mb-6 border border-gray-200 shadow-sm">
-                            <Briefcase size={14} className="text-int-teal"/> INVELO DELIVERY MODEL
-                        </div>
-                        <h2 className="font-serif text-4xl md:text-5xl mb-6 text-int-navy">Build. Use. Retire.</h2>
-                        <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                           Our <strong>Catalyst Builds</strong> are purpose-built tools designed to deliver measurable results in weeks. We follow a strict 7-stage pipeline that ends with us <strong>leaving</strong>.
-                        </p>
-                        <ul className="space-y-4 mb-8">
-                            <li className="flex items-start gap-3">
-                                <div className="mt-1 w-5 h-5 rounded-full bg-int-teal/20 flex items-center justify-center text-int-teal"><Timer size={12}/></div>
-                                <span className="text-gray-700"><strong>4 Weeks to Live:</strong> From discovery to deployment.</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <div className="mt-1 w-5 h-5 rounded-full bg-int-teal/20 flex items-center justify-center text-int-teal"><DollarSign size={12}/></div>
-                                <span className="text-gray-700"><strong>$5K - $250K:</strong> Flat project fees. No hidden "scale" costs.</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <div className="mt-1 w-5 h-5 rounded-full bg-int-teal/20 flex items-center justify-center text-int-teal"><CheckCircle2 size={12}/></div>
-                                <span className="text-gray-700"><strong>You Own The Code:</strong> No vendor lock-in. Full data export.</span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div>
-                        <InveloPipelineDiagram />
-                    </div>
-                </div>
-            </div>
-        </section>
-        )}
-
-        {/* Services Section */}
-        {featureFlags.showServices && (
-        <section id="services" className="py-24 bg-white" data-testid="section-services">
-            <div className="container mx-auto px-6">
-                <div className="max-w-4xl mx-auto text-center mb-16">
-                    <div className="inline-block mb-3 text-xs font-bold tracking-widest text-int-gold uppercase">OUR CAPABILITIES</div>
-                    <h2 className="font-serif text-3xl md:text-5xl mb-4 text-int-navy">AI Services Built for Speed</h2>
-                    <p className="text-gray-500 max-w-2xl mx-auto">We don't just talk about AI. We build functional, mission-critical tools that solve specific enterprise bottlenecks.</p>
-                </div>
+          {/* Living Animations Overlay */}
+          <AnimatePresence>
+            {isFinished && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="absolute inset-0 pointer-events-none"
+              >
+                {currentScene.livingElements}
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    <ServiceCard 
-                        title="AI Strategy & Roadmap" 
-                        description="Identify high-impact AI opportunities and define a clear execution path that avoids the SaaS trap."
-                        icon={Brain}
-                        delay="0s"
-                    />
-                    <ServiceCard 
-                        title="Custom Agent Development" 
-                        description="Purpose-built AI agents that automate complex workflows, from compliance to customer onboarding."
-                        icon={TerminalSquare}
-                        delay="0.1s"
-                    />
-                    <ServiceCard 
-                        title="Data Engineering" 
-                        description="Modernize your data stack to fuel AI models with clean, structured, and compliant information."
-                        icon={Database}
-                        delay="0.2s"
-                    />
-                    <ServiceCard 
-                        title="LLM Integration" 
-                        description="Seamlessly integrate state-of-the-art language models into your existing enterprise infrastructure."
-                        icon={Zap}
-                        delay="0.3s"
-                    />
+                <div className="absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-[1px]">
+                   <motion.div 
+                     initial={{ scale: 0, rotate: -10 }}
+                     animate={{ scale: 1, rotate: 0 }}
+                     className="bg-white p-10 rounded-[40px] shadow-2xl flex flex-col items-center gap-6 border-8 border-[#FFDAC1]"
+                   >
+                      <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+                        <Sparkles className="text-[#FFB347] w-20 h-20" />
+                      </motion.div>
+                      <h2 className="text-4xl font-bold text-gray-700">It's Alive!</h2>
+                      <p className="text-xl text-gray-500 text-center max-w-xs">Look at your beautiful creation dance!</p>
+                      <button 
+                        onClick={() => setIsFinished(false)}
+                        className="px-10 py-4 bg-[#C7CEEA] text-[#5A6A9A] rounded-full font-bold text-xl shadow-md hover:bg-[#B19CD9] transition-colors pointer-events-auto"
+                      >
+                        Keep Coloring
+                      </button>
+                   </motion.div>
                 </div>
-            </div>
-        </section>
-        )}
-
-        {/* SOC 2 Story */}
-        {featureFlags.showSoc2Story && (
-        <section className="py-24 bg-int-navy text-white overflow-hidden relative" data-testid="section-soc2">
-            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                <div className="w-96 h-96 rounded-full bg-int-teal blur-[100px] absolute top-[-100px] left-[-100px]"></div>
-                <div className="w-96 h-96 rounded-full bg-int-gold blur-[100px] absolute bottom-[-100px] right-[-100px]"></div>
-            </div>
-
-            <div className="container mx-auto px-6 relative z-10">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                     <div className="order-2 lg:order-1">
-                        <SOC2SprintDiagram />
-                        <SecurityArchitectureDiagram />
-                        <CostComparisonChart />
-                     </div>
-                     <div className="order-1 lg:order-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-int-dark/50 text-int-gold text-xs font-bold tracking-widest uppercase rounded-full mb-6 border border-int-gold/20">
-                            REAL RESULTS
-                        </div>
-                        <h2 className="font-serif text-4xl md:text-5xl mb-6 text-white">From Crisis to Compliance in 6 Weeks</h2>
-                        <p className="text-lg text-gray-300 mb-6 leading-relaxed">
-                            A healthcare IT firm faced a SOC 2 audit with missing logs. A Big 4 consultant quoted $150K and 3 months.
-                        </p>
-                        <p className="text-lg text-gray-300 mb-6 leading-relaxed">
-                            <strong>InVelo built a custom compliance dashboard in 3 weeks.</strong> The client passed the audit, paid $25K total, and now owns the tool outright.
-                        </p>
-                         <p className="text-lg text-int-gold font-serif italic border-l-2 border-int-gold pl-6">
-                            "Compliance-ready from day 1. SOC 2 audit trail built into every catalyst build."
-                        </p>
-                     </div>
-                </div>
-            </div>
-        </section>
-        )}
-
-        {/* Catalyst Builds (Use Cases) */}
-        {featureFlags.showUseCases && (
-        <section id="use-cases" className="py-24 bg-white" data-testid="section-catalyst">
-            <div className="container mx-auto px-6">
-                <div className="max-w-4xl mx-auto text-center mb-16">
-                    <div className="inline-block mb-3 text-xs font-bold tracking-widest text-int-gold uppercase">CATALYST BUILDS</div>
-                    <h2 className="font-serif text-3xl md:text-5xl mb-4 text-int-navy">Purpose-Built Tools for Real Problems</h2>
-                    <p className="text-gray-500 max-w-2xl mx-auto">Each build solves one problem, proves value fast, and gives you full ownership.</p>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <CatalystCard 
-                        title="SOC 2 Sprint" 
-                        price="$25K"
-                        duration="6 Weeks"
-                        roi="Saved $125k vs Consultant"
-                        icon={ShieldCheck}
-                        delay="0s" 
-                    />
-                    <CatalystCard 
-                        title="Onboarding Accelerator" 
-                        price="$12K-$20K"
-                        duration="2-4 Weeks"
-                        roi="Save 800 staff hrs/yr"
-                        icon={Users}
-                        delay="0.1s" 
-                    />
-                    <CatalystCard 
-                        title="Crisis Response Kit" 
-                        price="$8K-$15K"
-                        duration="3-5 Days"
-                        roi="30-40% faster response"
-                        icon={AlertCircle}
-                        delay="0.2s" 
-                    />
-                    <CatalystCard 
-                        title="Campaign Launch Kit" 
-                        price="$10K-$15K"
-                        duration="1-2 Weeks"
-                        roi="Launch 2 weeks faster"
-                        icon={Rocket}
-                        delay="0.3s" 
-                    />
-                </div>
-            </div>
-        </section>
-        )}
-
-        {/* Methodology: Agentic Orchestration */}
-        {featureFlags.showMethodology && (
-        <section id="methodology" className="py-24 bg-int-navy text-white relative overflow-hidden" data-testid="section-methodology">
-            <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/network/1920/1080?blur=10')] opacity-5 mix-blend-overlay pointer-events-none"></div>
-            <div className="container mx-auto px-6 relative z-10">
-                <div className="max-w-4xl mx-auto text-center mb-16">
-                    <div className="inline-block mb-3 text-xs font-bold tracking-widest text-int-teal uppercase">THE INVELO ENGINE</div>
-                    <h2 className="font-serif text-3xl md:text-5xl mb-6">Parallel AI-Agent Orchestration</h2>
-                    <p className="text-gray-300 max-w-2xl mx-auto text-lg leading-relaxed">
-                        How do we deliver 6-month enterprise projects in 6 weeks? We stopped writing boilerplate and started orchestrating parallel compute. Welcome to the era of high-velocity engineering.
-                    </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="p-8 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm hover:bg-white/10 transition-colors">
-                        <Cloud className="text-int-gold mb-4" size={32} />
-                        <h3 className="text-xl font-serif mb-3">Agent-Led Scaffolding</h3>
-                        <p className="text-gray-400 text-sm leading-relaxed">
-                            We bypass manual configuration. Using cloud-native environments, our agents instantly generate isolated containers with native databases and secrets management. Zero friction from day one.
-                        </p>
-                    </div>
-                    <div className="p-8 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm hover:bg-white/10 transition-colors">
-                        <GitMerge className="text-int-teal mb-4" size={32} />
-                        <h3 className="text-xl font-serif mb-3">Parallel Workstreams</h3>
-                        <p className="text-gray-400 text-sm leading-relaxed">
-                            A single InVelo architect manages multiple concurrent AI agents. While the primary agent handles core architecture, tactical terminal agents execute micro-polishes and UI refactors simultaneously.
-                        </p>
-                    </div>
-                    <div className="p-8 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm hover:bg-white/10 transition-colors">
-                        <Zap className="text-int-gold mb-4" size={32} />
-                        <h3 className="text-xl font-serif mb-3">The "Vibe Coding" Shift</h3>
-                        <p className="text-gray-400 text-sm leading-relaxed">
-                            By offloading infrastructure plumbing to AI, our architects maintain flow state. We focus entirely on your business logic, user experience, and feature delivery.
-                        </p>
-                    </div>
-                    <div className="p-8 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm hover:bg-white/10 transition-colors">
-                        <TerminalSquare className="text-int-teal mb-4" size={32} />
-                        <h3 className="text-xl font-serif mb-3">Automated Quality Hooks</h3>
-                        <p className="text-gray-400 text-sm leading-relaxed">
-                            Speed without quality is a liability. Our agents utilize strict linting and verification hooks, validating their own output against project-specific guardrails for a 3x quality improvement.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-        )}
-
-        {/* About Us Section */}
-        {featureFlags.showAbout && (
-        <section id="about" className="py-24 bg-int-cream border-t border-gray-200" data-testid="section-about">
-          <div className="container mx-auto px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-              <div>
-                <div className="inline-block mb-3 text-xs font-bold tracking-widest text-int-gold uppercase">OUR HERITAGE</div>
-                <h2 className="font-serif text-4xl md:text-5xl mb-8 text-int-navy">25 Years of Managed Excellence</h2>
-                <div className="space-y-6 text-lg text-gray-600 leading-relaxed">
-                  <p>
-                    Founded in the late 90s, <strong>INT Inc.</strong> has navigated every major technological shift. InVelo applies that deep operational DNA to the frontier of Artificial Intelligence.
-                  </p>
-                  <p>
-                    We believe that for AI to be truly transformative, it must be practical. We are not consultants who leave you with a slide deck. We build, we operate, and when the mission is complete, we leave you in control.
-                  </p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-8 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
-                  <History className="text-int-gold mb-4" size={32} />
-                  <h4 className="font-serif text-lg mb-2">Legacy</h4>
-                  <p className="text-sm text-gray-500">Established in 1999, headquartered in Lincolnshire, IL.</p>
-                </div>
-                <div className="p-8 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
-                  <Target className="text-int-teal mb-4" size={32} />
-                  <h4 className="font-serif text-lg mb-2">Mission</h4>
-                  <p className="text-sm text-gray-500">Building the tools you need — then getting out of the way.</p>
-                </div>
-                <div className="p-8 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
-                  <Landmark className="text-int-navy mb-4" size={32} />
-                  <h4 className="font-serif text-lg mb-2">Stability</h4>
-                  <p className="text-sm text-gray-500">Private, profitable, and women-owned business.</p>
-                </div>
-                <div className="p-8 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
-                  <Flag className="text-int-teal mb-4" size={32} />
-                  <h4 className="font-serif text-lg mb-2">Exit Strategy</h4>
-                  <p className="text-sm text-gray-500">Every engagement has a defined end. We build for outcomes.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        )}
-
-        {/* Why INT Inc. */}
-        {featureFlags.showWhyInt && (
-        <section id="why-int" className="py-24 bg-[#F5F7FA] border-t border-gray-200">
-             <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12">
-                <div className="md:col-span-5 relative">
-                    <div className="aspect-square bg-int-dark rounded-xl overflow-hidden relative border border-gray-200 shadow-2xl">
-                        <DataVaultScene />
-                        <div className="absolute bottom-6 left-0 right-0 text-center text-xs text-int-gold font-sans font-bold tracking-widest opacity-80">LIVE MONITORING ACTIVE</div>
-                    </div>
-                </div>
-                <div className="md:col-span-7 flex flex-col justify-center">
-                    <div className="inline-block mb-3 text-xs font-bold tracking-widest text-int-teal uppercase">THE DIFFERENCE</div>
-                    <h2 className="font-serif text-4xl mb-6 text-int-navy">Why INT Inc.</h2>
-                    <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                        Other firms sell you a relationship. We sell you an outcome. 25 years of managed services excellence means we know how to build, operate, AND walk away when the mission is complete.
-                    </p>
-                    <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                        We maintain the plumbing so you can focus on the business value.
-                    </p>
-                    
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="flex-1 p-6 bg-white border border-gray-100 rounded-lg shadow-sm">
-                            <div className="text-3xl font-serif text-int-gold mb-2">4 Weeks</div>
-                            <p className="text-sm text-gray-500 font-medium">Average time to live deployment</p>
-                        </div>
-                        <div className="flex-1 p-6 bg-white border border-gray-100 rounded-lg shadow-sm">
-                            <div className="text-3xl font-serif text-int-gold mb-2">25+</div>
-                            <p className="text-sm text-gray-500 font-medium">Years of Managed Services Excellence</p>
-                        </div>
-                    </div>
-                </div>
-             </div>
-        </section>
-        )}
-
-        {/* Contact / Start Mission */}
-        {featureFlags.showContact && (
-        <section id="contact" className="py-24 bg-int-navy text-white text-center">
-            <div className="container mx-auto px-6">
-                <h2 className="font-serif text-4xl md:text-5xl mb-6">Start a Mission</h2>
-                <p className="text-lg text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-                    Tell us the problem. We'll tell you what we'd build, how long it takes, and what it costs. No pitch deck. No 6-month engagement. Just a plan.
-                </p>
-                <div className="flex flex-col md:flex-row justify-center gap-6">
-                     <button className="px-8 py-4 bg-int-gold text-white font-bold rounded-full hover:bg-white hover:text-int-gold transition-all shadow-lg transform hover:-translate-y-1">
-                        Schedule Intake Call
-                     </button>
-                     <a href="https://humanx.co" target="_blank" rel="noreferrer" className="px-8 py-4 border border-white/20 text-white font-bold rounded-full hover:bg-white/10 transition-all flex items-center justify-center gap-2">
-                        Meet us at HumanX 2026 <ArrowRight size={18}/>
-                     </a>
-                </div>
-            </div>
-        </section>
-        )}
-
-      </main>
-
-      <footer className="bg-int-dark text-gray-400 py-16 border-t border-white/10">
-        <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12">
-            <div className="md:col-span-5 text-center md:text-left">
-                <div className="text-white font-serif font-bold text-3xl mb-2 flex items-center gap-2 justify-center md:justify-start">
-                    InVelo
-                </div>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full mt-2 mb-4">
-                    <div className="w-5 h-5 bg-int-navy rounded-sm flex items-center justify-center text-white font-sans font-bold text-xs shadow-md">
-                        <span className="text-int-gold">I</span>
-                    </div>
-                    <span className="text-[10px] font-bold tracking-widest uppercase text-white/80">An INT Inc. Company</span>
-                </div>
-                <p className="text-sm opacity-80 mb-8">We are not consultants. We are partners.</p>
-                <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm font-medium">
-                    <a href="https://intinc.com/#about" onClick={scrollToSection('about')} className="hover:text-white transition-colors cursor-pointer">About</a>
-                    <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-                    <a href="#" className="hover:text-white transition-colors">SOC 2 Report</a>
-                    <a href="https://humanx.co" className="hover:text-white transition-colors text-int-gold">HumanX 2026</a>
-                </div>
-            </div>
-
-            <div className="md:col-span-2"></div>
-
-            <div className="md:col-span-5">
-                <h4 className="text-white font-serif text-xl mb-4 text-center md:text-left">Get in Touch</h4>
-                <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-                    <div>
-                        <input type="text" placeholder="Name" className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-int-gold transition-colors" />
-                    </div>
-                    <div>
-                        <input type="email" placeholder="Email" className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-int-gold transition-colors" />
-                    </div>
-                    <div>
-                        <textarea placeholder="Message" rows={3} className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-int-gold transition-colors resize-none"></textarea>
-                    </div>
-                    <button type="submit" className="px-6 py-2 bg-int-gold text-white font-bold rounded-md hover:bg-white hover:text-int-gold transition-all w-full">
-                        Send Message
-                    </button>
-                </form>
-            </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-        <div className="text-center mt-16 text-xs text-gray-600 border-t border-white/5 pt-8">
-            © {new Date().getFullYear()} INT Inc. All rights reserved. | Lincolnshire, IL
-        </div>
-      </footer>
+      </div>
 
-      {/* Back to Top Button */}
-      <button
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className={`fixed bottom-8 right-8 p-3 rounded-full bg-int-navy text-white shadow-lg transition-all duration-300 z-50 hover:bg-int-gold hover:-translate-y-1 ${
-          scrolled ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
-        }`}
-        aria-label="Back to top"
-      >
-        <ArrowUp size={20} />
-      </button>
+      {/* Palette */}
+      <div className="p-8 bg-white border-t-8 border-[#FFDAC1]/20 overflow-x-auto">
+        <div className="flex items-center justify-center gap-6 min-w-max">
+          {palette.map((color) => (
+            <motion.button
+              key={color.hex}
+              whileHover={{ scale: 1.15, y: -8 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => {
+                setSelectedColor(color);
+                speak(`Selected ${color.name}`);
+              }}
+              className={`w-14 h-14 md:w-20 md:h-20 rounded-3xl shadow-lg border-4 transition-all ${
+                selectedColor.hex === color.hex ? 'border-gray-400 scale-110 -translate-y-3' : 'border-transparent'
+              }`}
+              style={{ backgroundColor: color.hex }}
+              title={color.name}
+            />
+          ))}
+          <div className="w-px h-16 bg-gray-200 mx-4" />
+          <button 
+            onClick={() => {
+              setSelectedColor({ hex: '#FFFFFF', name: 'Eraser' });
+              speak("Eraser selected. Let's clean up!");
+            }}
+            className={`w-14 h-14 md:w-20 md:h-20 rounded-3xl shadow-lg border-4 flex items-center justify-center bg-gray-50 transition-all ${
+              selectedColor.hex === '#FFFFFF' ? 'border-gray-400 scale-110 -translate-y-3' : 'border-transparent'
+            }`}
+          >
+            <Eraser size={32} className="text-gray-400" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default App;
+export default LivingColoringWorld;

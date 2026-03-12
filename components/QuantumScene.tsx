@@ -117,14 +117,27 @@ const SecurityRing = () => {
   );
 }
 
-export const HeroScene: React.FC = () => {
+const InteractiveScene = () => {
+  const groupRef = useRef<THREE.Group>(null);
+
+  useFrame((state) => {
+    if (groupRef.current) {
+      // Smoothly interpolate group rotation based on mouse position
+      const targetX = (state.pointer.y * Math.PI) / 10;
+      const targetY = (state.pointer.x * Math.PI) / 10;
+      
+      groupRef.current.rotation.x += (targetX - groupRef.current.rotation.x) * 0.05;
+      groupRef.current.rotation.y += (targetY - groupRef.current.rotation.y) * 0.05;
+    }
+  });
+
   return (
-    <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
-      <Canvas camera={{ position: [0, 0, 6], fov: 45 }}>
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} intensity={1.5} color="#F9F8F4" />
-        <pointLight position={[-10, -10, -5]} intensity={0.5} color="#1E3A5F" />
-        
+    <>
+      <ambientLight intensity={0.5} />
+      <pointLight position={[10, 10, 10]} intensity={1.5} color="#F9F8F4" />
+      <pointLight position={[-10, -10, -5]} intensity={0.5} color="#1E3A5F" />
+      
+      <group ref={groupRef}>
         <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.5}>
           {/* Main Node - Navy */}
           <NetworkNode position={[0, 0, 0]} color="#1E3A5F" scale={1.2} />
@@ -137,9 +150,19 @@ export const HeroScene: React.FC = () => {
            {/* Accent Node - Gold */}
            <NetworkNode position={[3.5, -1.5, -3]} color="#C5A059" scale={0.7} />
         </Float>
+      </group>
 
-        <Environment preset="city" />
-        <Stars radius={100} depth={50} count={1000} factor={4} saturation={0} fade speed={1} />
+      <Environment preset="city" />
+      <Stars radius={100} depth={50} count={1000} factor={4} saturation={0} fade speed={1} />
+    </>
+  );
+};
+
+export const HeroScene: React.FC = () => {
+  return (
+    <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
+      <Canvas camera={{ position: [0, 0, 6], fov: 45 }}>
+        <InteractiveScene />
       </Canvas>
     </div>
   );
